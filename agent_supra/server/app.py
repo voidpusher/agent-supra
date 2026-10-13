@@ -1,6 +1,6 @@
 """The web application: agent API, dashboard, public pages.
 
-    uvicorn --factory agent_supervisor.server.app:create_app --host 0.0.0.0 --port 8000
+    uvicorn --factory agent_supra.server.app:create_app --host 0.0.0.0 --port 8000
 
 Configuration comes from environment variables (see settings.py and the README).
 """
@@ -28,7 +28,7 @@ from .core import Supervisor, SupervisorError
 from .ratelimit import RateLimiter
 from .settings import Settings
 
-log = logging.getLogger("agent_supervisor")
+log = logging.getLogger("agent_supra")
 
 CSP = ("default-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; "
        "img-src 'self' data:; script-src 'self'; form-action 'self'; frame-ancestors 'none'; base-uri 'none'")
@@ -42,7 +42,7 @@ def _init_sentry(dsn: str | None) -> None:
         sentry_sdk.init(dsn=dsn, traces_sample_rate=0.0, send_default_pii=False)
         log.info("Sentry error reporting enabled")
     except ImportError:
-        log.warning("SENTRY_DSN is set but sentry-sdk isn't installed: pip install 'agent-supervisor-sdk[server,sentry]'")
+        log.warning("SENTRY_DSN is set but sentry-sdk isn't installed: pip install 'agent-supra[server,sentry]'")
 
 
 def create_app(settings: Settings | None = None, supervisor: Supervisor | None = None,

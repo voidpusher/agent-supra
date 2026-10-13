@@ -3,8 +3,8 @@ from types import SimpleNamespace
 import pytest
 from google.genai import types
 
-from agent_supervisor import SupervisedRun, SupervisorPaused
-from agent_supervisor.pricing import estimate_cost_micros
+from agent_supra import SupervisedRun, SupervisorPaused
+from agent_supra.pricing import estimate_cost_micros
 
 
 def gemini_response(prompt=1000, out=200, thoughts=300, tool_prompt=None):

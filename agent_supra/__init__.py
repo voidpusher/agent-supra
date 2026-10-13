@@ -1,7 +1,7 @@
-"""Agent Supervisor: notice when an unattended agent is stuck, pause it, show why.
+"""Agent Supra: notice when an unattended agent is stuck, pause it, show why.
 
 The SDK (this package's top level) has no dependencies. The server lives in
-``agent_supervisor.server`` and needs ``pip install 'agent-supervisor-sdk[server]'``.
+``agent_supra.server`` and needs ``pip install 'agent-supra[server]'``.
 """
 
 __version__ = "1.0.0"

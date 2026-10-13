@@ -5,7 +5,7 @@ never drift the way floats do.
 
 Built-in prices are Google's published Standard-tier Gemini prices, checked on
 2026-10-13 (https://ai.google.dev/gemini-api/docs/pricing). Prices change:
-override them with :func:`register_price`, the ``AGENT_SUPERVISOR_PRICES``
+override them with :func:`register_price`, the ``AGENT_SUPRA_PRICES``
 environment variable on the server, or per-workspace prices in the dashboard.
 
 Costs computed here are *estimates* from reported token usage, never your
@@ -83,7 +83,7 @@ def lookup(model: str, overrides: dict[str, Price] | None = None) -> Price | Non
     """Exact match first, then the longest known prefix (``gemini-2.5-flash-001``
     resolves to ``gemini-2.5-flash``; ``gemini-2.5-flash-lite`` stays itself)."""
     name = normalize(model)
-    tables = [overrides or {}, _registered, parse_prices(os.environ.get("AGENT_SUPERVISOR_PRICES")), BUILTIN]
+    tables = [overrides or {}, _registered, parse_prices(os.environ.get("AGENT_SUPRA_PRICES")), BUILTIN]
     for table in tables:
         if name in table:
             return table[name]

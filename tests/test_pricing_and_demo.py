@@ -1,6 +1,6 @@
-from agent_supervisor import pricing
-from agent_supervisor.demo import HEALTHY_PATCHES, STUCK_PATCHES, main, run_agent
-from agent_supervisor.report import render_report
+from agent_supra import pricing
+from agent_supra.demo import HEALTHY_PATCHES, STUCK_PATCHES, main, run_agent
+from agent_supra.report import render_report
 
 
 def test_prefix_and_versioned_names():
@@ -22,7 +22,7 @@ def test_long_context_tier():
 def test_overrides_win(monkeypatch):
     overrides = pricing.parse_prices({"gemini-2.5-flash": [1, 1]})
     assert pricing.estimate_cost_micros("gemini-2.5-flash", 1_000_000, 0, overrides) == 1_000_000
-    monkeypatch.setenv("AGENT_SUPERVISOR_PRICES", '{"house-model": [2, 4]}')
+    monkeypatch.setenv("AGENT_SUPRA_PRICES", '{"house-model": [2, 4]}')
     assert pricing.estimate_cost_micros("house-model", 1_000_000, 1_000_000) == 6_000_000
 
 
@@ -44,3 +44,11 @@ def test_demo_cli(tmp_path, capsys):
     assert main(["--report", str(report)]) == 0
     assert "PAUSED by supervisor" in capsys.readouterr().out
     assert "No progress" in report.read_text()
+
+
+def test_cli_passes_options_to_demo(tmp_path, capsys):
+    from agent_supra.cli import main as cli_main
+    report = tmp_path / "r.html"
+    assert cli_main(["demo", "--observe", "--report", str(report)]) == 0
+    assert "observation mode" in capsys.readouterr().out
+    assert report.exists()

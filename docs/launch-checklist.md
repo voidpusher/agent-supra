@@ -2,13 +2,12 @@
 
 In order. The product is built; these are the things only you can do.
 
-## 1. Decide the name (before anything public)
+## 1. Name: Agent Supra (decided)
 
-- [ ] Pick the product name. It appears in `APP_NAME`, `pyproject.toml` (`name`), the domain and the landing page.
-- [ ] Check the PyPI name is free: open `https://pypi.org/project/<name>/` (a 404 means free). `agent-supervisor` is **taken**; `agent-supervisor-sdk` was free on 13 Oct 2026.
-- [ ] Buy the domain.
-
-Renaming later means changing: `APP_NAME` (env), `name` in `pyproject.toml`, the `pip install` lines in `README.md`, `landing.html` and `quickstart.html`. The Python import (`agent_supervisor`) can stay.
+- [x] Product name: **Agent Supra**. Package: `agent-supra` (free on PyPI on 13 Oct 2026). Command: `agent-supra`. Python import: `agent_supra`.
+- [ ] Register the PyPI name early by publishing a first release (step 4), so nobody else takes it.
+- [ ] Buy a domain (for example agentsupra.com or agentsupra.dev) and set `BASE_URL` to it.
+- [ ] Claim the name on X and GitHub.
 
 ## 2. Test it (docs/testing-with-gemini.md)
 

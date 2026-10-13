@@ -87,9 +87,9 @@ def render_report(sup, run_ids: list[str] | None = None) -> str:
     cards = "".join(_run_card(sup, r) for r in runs)
     generated = time.strftime("%Y-%m-%d %H:%M")
     return f"""<!doctype html><html lang=en><head><meta charset=utf-8>
-<meta name=viewport content="width=device-width,initial-scale=1"><title>Agent Supervisor report</title>
+<meta name=viewport content="width=device-width,initial-scale=1"><title>Agent Supra report</title>
 <style>{CSS}</style></head><body><main>
-<h1>Agent Supervisor report</h1>
+<h1>Agent Supra report</h1>
 <p class=sub>{len(runs)} run(s), generated {generated}. Costs are estimates from token usage.</p>
 <section class=card><table><thead><tr><th>Task</th><th>State</th><th class=num>Est. spend</th><th>Reason</th></tr></thead>
 <tbody>{summary}</tbody></table></section>

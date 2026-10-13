@@ -17,7 +17,7 @@ from ..pricing import usd
 from .accounts import Accounts
 from .settings import Settings
 
-log = logging.getLogger("agent_supervisor.alerts")
+log = logging.getLogger("agent_supra.alerts")
 SLACK_PREFIX = "https://hooks.slack.com/"
 
 

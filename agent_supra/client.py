@@ -1,6 +1,6 @@
 """HTTP client for the hosted (or self-hosted) supervisor. Standard library only.
 
-    sup = Client()   # reads AGENT_SUPERVISOR_API_KEY and AGENT_SUPERVISOR_URL
+    sup = Client()   # reads AGENT_SUPRA_API_KEY and AGENT_SUPRA_URL
 
 If the service can't be reached, ``fail_mode`` decides what your agent does:
 
@@ -29,7 +29,7 @@ from typing import Any, Callable
 
 from . import __version__
 
-log = logging.getLogger("agent_supervisor")
+log = logging.getLogger("agent_supra")
 DEFAULT_URL = "http://localhost:8000"
 BATCH = 500
 
@@ -53,12 +53,12 @@ class Client:
     def __init__(self, api_key: str | None = None, base_url: str | None = None, fail_mode: str = "open",
                  timeout: float = 5.0, retries: int = 2, max_buffer: int = 5000,
                  transport: Transport | None = None):
-        self.api_key = api_key or os.environ.get("AGENT_SUPERVISOR_API_KEY")
+        self.api_key = api_key or os.environ.get("AGENT_SUPRA_API_KEY")
         if not self.api_key:
-            raise ValueError("No API key: pass api_key= or set AGENT_SUPERVISOR_API_KEY")
+            raise ValueError("No API key: pass api_key= or set AGENT_SUPRA_API_KEY")
         if fail_mode not in ("open", "closed"):
             raise ValueError("fail_mode must be 'open' or 'closed'")
-        self.base_url = (base_url or os.environ.get("AGENT_SUPERVISOR_URL") or DEFAULT_URL).rstrip("/")
+        self.base_url = (base_url or os.environ.get("AGENT_SUPRA_URL") or DEFAULT_URL).rstrip("/")
         self.fail_mode = fail_mode
         self.timeout = timeout
         self.retries = retries
@@ -81,7 +81,7 @@ class Client:
         data = json.dumps(body).encode() if body is not None else None
         request = urllib.request.Request(url, data=data, method=method, headers={
             "Authorization": f"Bearer {self.api_key}", "Content-Type": "application/json",
-            "Accept": "application/json", "User-Agent": f"agent-supervisor-sdk/{__version__}"})
+            "Accept": "application/json", "User-Agent": f"agent-supra/{__version__}"})
         try:
             with urllib.request.urlopen(request, timeout=self.timeout) as response:  # noqa: S310
                 return response.status, json.loads(response.read() or b"{}")
@@ -118,7 +118,7 @@ class Client:
 
     def _degraded(self, why: Exception) -> dict:
         if not self._warned:
-            log.warning("agent supervisor unreachable (%s); fail_mode=%s", why, self.fail_mode)
+            log.warning("Agent Supra unreachable (%s); fail_mode=%s", why, self.fail_mode)
             self._warned = True
         if self.fail_mode == "open":
             return {"allowed": True, "state": "unknown", "reason": "supervisor unreachable", "degraded": True}
@@ -193,7 +193,7 @@ class Client:
             except SupervisorAPIError as exc:
                 if exc.status in (401, 403):
                     raise
-                log.error("agent supervisor rejected %d event(s): %s", len(chunk), exc)
+                log.error("Agent Supra rejected %d event(s): %s", len(chunk), exc)
                 decision = None
             for _ in chunk:
                 buffer.popleft()

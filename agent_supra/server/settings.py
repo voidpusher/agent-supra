@@ -17,7 +17,7 @@ def _bool(name: str, default: bool) -> bool:
 class Settings:
     database_url: str = "sqlite:///supervisor.db"
     base_url: str = "http://localhost:8000"
-    app_name: str = "Agent Supervisor"
+    app_name: str = "Agent Supra"
     allow_signup: bool = True
     secure_cookies: bool = False
     retention_days: int = 30
@@ -35,10 +35,10 @@ class Settings:
     def from_env(cls) -> "Settings":
         base_url = os.environ.get("BASE_URL", "http://localhost:8000").rstrip("/")
         return cls(
-            database_url=os.environ.get("DATABASE_URL", os.environ.get("AGENT_SUPERVISOR_DB_URL",
+            database_url=os.environ.get("DATABASE_URL", os.environ.get("AGENT_SUPRA_DB_URL",
                                                                        "sqlite:///supervisor.db")),
             base_url=base_url,
-            app_name=os.environ.get("APP_NAME", "Agent Supervisor"),
+            app_name=os.environ.get("APP_NAME", "Agent Supra"),
             allow_signup=_bool("ALLOW_SIGNUP", True),
             secure_cookies=_bool("SECURE_COOKIES", base_url.startswith("https://")),
             retention_days=int(os.environ.get("RETENTION_DAYS", "30")),

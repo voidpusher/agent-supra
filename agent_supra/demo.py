@@ -1,8 +1,8 @@
 """Two-run demo: one agent gets stuck and is paused, one struggles but succeeds untouched.
 
-    python -m agent_supervisor.demo                 # pausing enabled for loop rules
-    python -m agent_supervisor.demo --observe       # observation mode: flag only
-    python -m agent_supervisor.demo --http http://localhost:8000   # needs AGENT_SUPERVISOR_API_KEY
+    python -m agent_supra.demo                 # pausing enabled for loop rules
+    python -m agent_supra.demo --observe       # observation mode: flag only
+    python -m agent_supra.demo --http http://localhost:8000   # needs AGENT_SUPRA_API_KEY
 
 Each run works on a real tiny repository in a temp folder and runs real
 pytest. The "model" is scripted (FakeModel) so the demo is free and repeatable;
@@ -176,7 +176,7 @@ def main(argv: list[str] | None = None) -> int:
         backend = sup = Supervisor("sqlite://" if args.db == ":memory:" else f"sqlite:///{args.db}")
 
     mode = "observation mode (flag only)" if args.observe else "pausing enabled"
-    print(f"Agent Supervisor demo · {mode}\n")
+    print(f"Agent Supra demo · {mode}\n")
     print("Run A: an agent that keeps editing code while the same tests fail")
     task_a = backend.create_task("Run A: stuck agent fixing apply_discount", budget_usd=5.0, policy=policy)
     run_a = run_agent(backend, task_a, STUCK_PATCHES)

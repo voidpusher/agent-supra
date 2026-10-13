@@ -1,4 +1,4 @@
-"""Server side: needs ``pip install 'agent-supervisor-sdk[server]'``."""
+"""Server side: needs ``pip install 'agent-supra[server]'``."""
 
 from .core import Conflict, NotFound, Supervisor, SupervisorError
 

@@ -1,4 +1,4 @@
-"""Command line: ``agent-supervisor serve | migrate | create-user | prune | demo``."""
+"""Command line: ``agent-supra serve | migrate | create-user | prune | demo``."""
 
 from __future__ import annotations
 
@@ -17,7 +17,7 @@ def cmd_serve(args) -> int:
     import uvicorn
     from .server import db
     db.migrate(db.make_engine(_settings().database_url))   # once, before workers start
-    uvicorn.run("agent_supervisor.server.app:create_app", factory=True, host=args.host, port=args.port,
+    uvicorn.run("agent_supra.server.app:create_app", factory=True, host=args.host, port=args.port,
                 workers=args.workers, proxy_headers=True, forwarded_allow_ips=os.environ.get("FORWARDED_ALLOW_IPS", "*"),
                 log_level="info")
     return 0
@@ -34,7 +34,7 @@ def cmd_create_user(args) -> int:
     from .server.accounts import Accounts
     from .server.core import Supervisor, SupervisorError
     sup = Supervisor(_settings().database_url)
-    password = os.environ.get("AGENT_SUPERVISOR_NEW_PASSWORD") or getpass.getpass("Password (10+ characters): ")
+    password = os.environ.get("AGENT_SUPRA_NEW_PASSWORD") or getpass.getpass("Password (10+ characters): ")
     try:
         _, workspace = Accounts(sup.engine).signup(args.email, password, args.workspace)
     except SupervisorError as exc:
@@ -53,7 +53,12 @@ def cmd_prune(args) -> int:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(prog="agent-supervisor", description="Agent Supervisor server tools")
+    argv = sys.argv[1:] if argv is None else argv
+    if argv[:1] == ["demo"]:
+        # Hand everything after "demo" to the demo's own parser (--observe, --report, ...).
+        from .demo import main as demo_main
+        return demo_main(argv[1:])
+    parser = argparse.ArgumentParser(prog="agent-supra", description="Agent Supra server tools")
     sub = parser.add_subparsers(dest="command", required=True)
 
     serve = sub.add_parser("serve", help="run the web server (reads DATABASE_URL, BASE_URL, ...)")
@@ -73,9 +78,7 @@ def main(argv: list[str] | None = None) -> int:
     prune.add_argument("--days", type=int)
     prune.set_defaults(fn=cmd_prune)
 
-    demo = sub.add_parser("demo", help="run the two-agent demo locally")
-    demo.add_argument("rest", nargs=argparse.REMAINDER)
-    demo.set_defaults(fn=lambda a: __import__("agent_supervisor.demo", fromlist=["main"]).main(a.rest))
+    sub.add_parser("demo", help="run the two-agent demo locally (try: agent-supra demo --help)")
 
     args = parser.parse_args(argv)
     return args.fn(args)

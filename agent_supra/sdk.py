@@ -1,6 +1,6 @@
 """Python SDK: wrap an agent so the supervisor can watch it and pause it.
 
-    from agent_supervisor import Client, SupervisedRun, SupervisorPaused
+    from agent_supra import Client, SupervisedRun, SupervisorPaused
 
     sup = Client()                                   # hosted service (API key from env)
     task = sup.create_task("Fix failing checkout tests", budget_usd=3)
@@ -53,12 +53,12 @@ class SupervisorPaused(Exception):
 
 
 def _fp_key() -> bytes:
-    return os.environ.get("AGENT_SUPERVISOR_FP_KEY", "agent-supervisor-default-key").encode()
+    return os.environ.get("AGENT_SUPRA_FP_KEY", "agent-supra-default-key").encode()
 
 
 def fingerprint(value: Any, key: bytes | None = None) -> str:
     """Keyed hash, so raw arguments and errors never leave your machine.
-    Set AGENT_SUPERVISOR_FP_KEY to your own secret to make them unguessable."""
+    Set AGENT_SUPRA_FP_KEY to your own secret to make them unguessable."""
     return hmac.new(key or _fp_key(), repr(value).encode(), hashlib.sha256).hexdigest()[:16]
 
 
@@ -83,7 +83,7 @@ def classify_error(exc: BaseException) -> str:
 
 class SupervisedRun:
     """One attempt at a task. ``backend`` is a :class:`Client` (hosted) or a local
-    :class:`agent_supervisor.server.Supervisor`."""
+    :class:`agent_supra.server.Supervisor`."""
 
     def __init__(self, backend, task_id: str, parent_run_id: str | None = None,
                  fingerprint_key: bytes | None = None):

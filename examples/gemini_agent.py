@@ -1,9 +1,9 @@
 """A real Gemini agent that fixes a bug, supervised. Use it to test the product.
 
-    pip install agent-supervisor-sdk google-genai pytest
+    pip install agent-supra google-genai pytest
     export GEMINI_API_KEY=...                  # from https://aistudio.google.com/apikey
-    export AGENT_SUPERVISOR_API_KEY=as_live_...  # from your dashboard
-    export AGENT_SUPERVISOR_URL=https://your-deployment
+    export AGENT_SUPRA_API_KEY=as_live_...  # from your dashboard
+    export AGENT_SUPRA_URL=https://your-deployment
 
     python examples/gemini_agent.py              # solvable bug: should finish, no pause
     python examples/gemini_agent.py --impossible # contradictory tests: should get paused
@@ -22,8 +22,8 @@ import sys
 
 from google import genai
 
-from agent_supervisor import Client, SupervisedRun, SupervisorPaused
-from agent_supervisor.demo import BUG, edit_file, make_repo, rev, run_tests
+from agent_supra import Client, SupervisedRun, SupervisorPaused
+from agent_supra.demo import BUG, edit_file, make_repo, rev, run_tests
 
 IMPOSSIBLE_TEST = '''
 

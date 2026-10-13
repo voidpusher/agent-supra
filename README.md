@@ -1,17 +1,17 @@
-# Agent Supervisor
+# Agent Supra
 
 Notice when an unattended AI agent is stuck, pause it before more money goes into a loop, and show exactly why.
 
-A spend cap can't tell a stuck agent from one working hard on a tough bug. Agent Supervisor watches **progress**: if an agent keeps changing code while its failing tests don't get any fewer, the run is flagged (or paused, once you opt in) with the evidence.
+A spend cap can't tell a stuck agent from one working hard on a tough bug. Agent Supra watches **progress**: if an agent keeps changing code while its failing tests don't get any fewer, the run is flagged (or paused, once you opt in) with the evidence.
 
-- **SDK** (`pip install agent-supervisor-sdk`): no dependencies. Wraps Gemini, OpenAI and Anthropic clients.
+- **SDK** (`pip install agent-supra`): no dependencies. Wraps Gemini, OpenAI and Anthropic clients.
 - **Hosted service**: dashboard, API keys, alerts to Slack and email, Postgres-backed. One Docker image.
 
 ## Try it in two minutes (no accounts, no API keys)
 
 ```bash
 pip install -e ".[dev]"
-agent-supervisor demo            # or: python -m agent_supervisor.demo
+agent-supra demo            # or: python -m agent_supra.demo
 ```
 
 Two scripted agents fix a real bug in a tiny repo, running real pytest. One edits the code four times while the same tests fail and gets **paused**. The other fails twice, changes approach, passes, and is **left alone**. A timeline report is written to `supervisor_report.html`.
@@ -20,7 +20,7 @@ Two scripted agents fix a real bug in a tiny repo, running real pytest. One edit
 
 ```bash
 cp .env.example .env
-agent-supervisor serve           # SQLite by default; http://localhost:8000
+agent-supra serve           # SQLite by default; http://localhost:8000
 ```
 
 Or with Postgres, the way production runs:
@@ -35,9 +35,9 @@ Sign up, create an API key, then follow the quickstart at `/docs/quickstart`.
 
 ```python
 from google import genai
-from agent_supervisor import Client, SupervisedRun, SupervisorPaused
+from agent_supra import Client, SupervisedRun, SupervisorPaused
 
-sup = Client()   # AGENT_SUPERVISOR_API_KEY and AGENT_SUPERVISOR_URL from the environment
+sup = Client()   # AGENT_SUPRA_API_KEY and AGENT_SUPRA_URL from the environment
 task = sup.create_task("Fix failing checkout tests", budget_usd=3)
 
 with SupervisedRun(sup, task) as run:
@@ -94,12 +94,12 @@ All server settings are environment variables. See [`.env.example`](.env.example
 | --- | --- | --- |
 | `DATABASE_URL` | `sqlite:///supervisor.db` | Postgres in production (`postgres://` URLs work) |
 | `BASE_URL` | `http://localhost:8000` | Public URL; `https://` turns on secure cookies and HSTS |
-| `APP_NAME` | `Agent Supervisor` | Product name shown everywhere |
-| `ALLOW_SIGNUP` | `true` | `false` for invite-only (`agent-supervisor create-user`) |
+| `APP_NAME` | `Agent Supra` | Product name shown everywhere |
+| `ALLOW_SIGNUP` | `true` | `false` for invite-only (`agent-supra create-user`) |
 | `RETENTION_DAYS` | `30` | Run data older than this is deleted every 6 hours |
 | `SMTP_*` | unset | Email alerts |
 | `SENTRY_DSN` | unset | Error tracking |
-| `AGENT_SUPERVISOR_PRICES` | unset | Extra model prices, `{"model": [input, output]}` USD per 1M tokens |
+| `AGENT_SUPRA_PRICES` | unset | Extra model prices, `{"model": [input, output]}` USD per 1M tokens |
 
 ## Deploying
 
@@ -112,7 +112,7 @@ See [docs/deploying.md](docs/deploying.md). Short version: push to GitHub, creat
 - Dashboard forms are CSRF-protected; cookies are HttpOnly and SameSite.
 - Rate limits on events and on login/sign-up; request size limits; strict security headers.
 - Slack webhooks must point at `hooks.slack.com`, so the setting can't be used to reach internal URLs.
-- Prompts, model replies and code are never sent; tool arguments and errors are sent only as keyed fingerprints. Set `AGENT_SUPERVISOR_FP_KEY` in your agents to make them unguessable.
+- Prompts, model replies and code are never sent; tool arguments and errors are sent only as keyed fingerprints. Set `AGENT_SUPRA_FP_KEY` in your agents to make them unguessable.
 
 ## Development
 

@@ -3,7 +3,7 @@ requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "agent-supervisor-sdk"
+name = "agent-supra"
 version = "1.0.0"
 description = "Notice when an unattended AI agent is stuck, pause it, and show why."
 readme = "README.md"
@@ -31,20 +31,20 @@ server = [
 ]
 sentry = ["sentry-sdk[fastapi]>=2.0"]
 dev = [
-  "agent-supervisor-sdk[server]",
+  "agent-supra[server]",
   "pytest>=8",
   "httpx>=0.27",
   "google-genai>=1.0",
 ]
 
 [project.scripts]
-agent-supervisor = "agent_supervisor.cli:main"
+agent-supra = "agent_supra.cli:main"
 
 [tool.setuptools.packages.find]
-include = ["agent_supervisor*"]
+include = ["agent_supra*"]
 
 [tool.setuptools.package-data]
-"agent_supervisor.server" = ["templates/*.html", "static/*"]
+"agent_supra.server" = ["templates/*.html", "static/*"]
 
 [tool.pytest.ini_options]
 pythonpath = ["."]

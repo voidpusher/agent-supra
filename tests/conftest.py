@@ -4,9 +4,9 @@ import re
 import pytest
 from fastapi.testclient import TestClient
 
-from agent_supervisor.server.app import create_app
-from agent_supervisor.server.core import Supervisor
-from agent_supervisor.server.settings import Settings
+from agent_supra.server.app import create_app
+from agent_supra.server.core import Supervisor
+from agent_supra.server.settings import Settings
 
 
 def database_url() -> str:
@@ -19,7 +19,7 @@ def supervisor():
     sup = Supervisor(database_url())
     yield sup
     if sup.engine.dialect.name == "postgresql":
-        from agent_supervisor.server import db
+        from agent_supra.server import db
         db.metadata.drop_all(sup.engine)
 
 

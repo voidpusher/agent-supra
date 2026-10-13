@@ -1,6 +1,6 @@
 import pytest
 
-from agent_supervisor.detector import action_for, evaluate, merge_policy
+from agent_supra.detector import action_for, evaluate, merge_policy
 from tests.helpers import EventLog
 
 FAILING = ["t::b", "t::c"]

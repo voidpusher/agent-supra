@@ -9,7 +9,7 @@ databases:
 
 services:
   - type: web
-    name: agent-supervisor
+    name: agent-supra
     runtime: docker
     plan: 0.5c-512mb
     healthCheckPath: /healthz
@@ -19,9 +19,9 @@ services:
           name: supervisor-db
           property: connectionString
       - key: BASE_URL
-        value: https://agent-supervisor.onrender.com
+        value: https://agent-supra.onrender.com
       - key: APP_NAME
-        value: Agent Supervisor
+        value: Agent Supra
       - key: ALLOW_SIGNUP
         value: "true"
       - key: RETENTION_DAYS

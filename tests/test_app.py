@@ -91,8 +91,8 @@ def test_dashboard_forms_need_csrf(account):
 def test_login_rate_limited(supervisor):
     from fastapi.testclient import TestClient
 
-    from agent_supervisor.server.app import create_app
-    from agent_supervisor.server.settings import Settings
+    from agent_supra.server.app import create_app
+    from agent_supra.server.settings import Settings
     client = TestClient(create_app(Settings(database_url="sqlite://", auth_attempts_per_minute=3),
                                    supervisor=supervisor))
     page = client.get("/login")
@@ -122,7 +122,7 @@ def test_keys_are_stored_hashed(account):
     server, key = account
     from sqlalchemy import select
 
-    from agent_supervisor.server import db
+    from agent_supra.server import db
     with server.ctx.supervisor.engine.connect() as conn:
         stored = [r.key_hash for r in conn.execute(select(db.api_keys)).all()]
     assert key not in stored and len(stored[0]) == 64
@@ -248,7 +248,7 @@ def test_delete_account_removes_everything(account):
     assert server.get("/v1/whoami", headers=api(server, key)).status_code == 401
     from sqlalchemy import func, select
 
-    from agent_supervisor.server import db
+    from agent_supra.server import db
     with server.ctx.supervisor.engine.connect() as conn:
         assert conn.execute(select(func.count()).select_from(db.events)).scalar_one() == 0
         assert conn.execute(select(func.count()).select_from(db.users)).scalar_one() == 0
@@ -274,8 +274,8 @@ def test_body_size_and_event_validation(account):
 def test_event_rate_limit(supervisor):
     from fastapi.testclient import TestClient
 
-    from agent_supervisor.server.app import create_app
-    from agent_supervisor.server.settings import Settings
+    from agent_supra.server.app import create_app
+    from agent_supra.server.settings import Settings
     client = TestClient(create_app(Settings(database_url="sqlite://", events_per_minute=8,
                                             auth_attempts_per_minute=100), supervisor=supervisor))
     signup(client)
@@ -295,7 +295,7 @@ def test_prune_removes_old_runs(supervisor):
     assert supervisor.prune(older_than_days=30) == 0
     from sqlalchemy import update
 
-    from agent_supervisor.server import db
+    from agent_supra.server import db
     with supervisor.engine.begin() as conn:
         conn.execute(update(db.runs).values(created_at=time.time() - 40 * 86400))
         conn.execute(update(db.tasks).values(created_at=time.time() - 40 * 86400))

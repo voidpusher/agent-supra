@@ -21,11 +21,11 @@ Render: the service's **Settings**, then **Custom Domains**. Add the domain, cre
 ## Any other host (Fly.io, Railway, a VPS)
 
 ```bash
-docker build -t agent-supervisor .
+docker build -t agent-supra .
 docker run -p 8000:8000 \
   -e DATABASE_URL=postgresql://user:pass@host:5432/db \
   -e BASE_URL=https://your-domain \
-  agent-supervisor
+  agent-supra
 ```
 
 The container runs database migrations on start, then serves on `$PORT` (default 8000) with `$WEB_CONCURRENCY` processes (default 2). Put it behind HTTPS; the server trusts `X-Forwarded-*` headers from the proxy.
@@ -51,7 +51,7 @@ Deploy the new image. Migrations run automatically on start and refuse to run ol
 Set `ALLOW_SIGNUP=false` and create accounts with:
 
 ```bash
-agent-supervisor create-user someone@example.com --workspace "Their team"
+agent-supra create-user someone@example.com --workspace "Their team"
 ```
 
 ## Scaling notes

@@ -4,15 +4,15 @@ A test plan for checking the product on a real Gemini agent before launch. Each 
 
 ## Setup (once)
 
-1. Run the service: `agent-supervisor serve` locally, or deploy it (see deploying.md).
+1. Run the service: `agent-supra serve` locally, or deploy it (see deploying.md).
 2. Sign up at `/signup`. You land on the API keys page; create a key.
 3. In a terminal:
 
 ```bash
 pip install -e ".[dev]"            # from the repo; includes google-genai and pytest
 export GEMINI_API_KEY=...          # https://aistudio.google.com/apikey
-export AGENT_SUPERVISOR_API_KEY=as_live_...
-export AGENT_SUPERVISOR_URL=http://localhost:8000     # or your deployment
+export AGENT_SUPRA_API_KEY=as_live_...
+export AGENT_SUPRA_URL=http://localhost:8000     # or your deployment
 ```
 
 Each run of the example costs well under $0.05 on `gemini-2.5-flash`.

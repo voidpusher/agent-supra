@@ -2,9 +2,9 @@ from types import SimpleNamespace
 
 import pytest
 
-from agent_supervisor import SupervisedRun, SupervisorPaused
-from agent_supervisor.server import SupervisorError
-from agent_supervisor.pricing import register_price
+from agent_supra import SupervisedRun, SupervisorPaused
+from agent_supra.server import SupervisorError
+from agent_supra.pricing import register_price
 
 FAILING = ["t::b", "t::c"]
 SUITE = ["t::a", "t::b", "t::c"]

@@ -2,8 +2,8 @@
 
 import pytest
 
-from agent_supervisor import Client, SupervisedRun, SupervisorAPIError, SupervisorPaused
-from agent_supervisor.demo import HEALTHY_PATCHES, STUCK_PATCHES, run_agent
+from agent_supra import Client, SupervisedRun, SupervisorAPIError, SupervisorPaused
+from agent_supra.demo import HEALTHY_PATCHES, STUCK_PATCHES, run_agent
 
 
 class Transport:
@@ -43,7 +43,7 @@ def test_demo_agent_over_http(account):
 
 
 def test_missing_key_is_a_clear_error(monkeypatch):
-    monkeypatch.delenv("AGENT_SUPERVISOR_API_KEY", raising=False)
+    monkeypatch.delenv("AGENT_SUPRA_API_KEY", raising=False)
     with pytest.raises(ValueError, match="API key"):
         Client()
 

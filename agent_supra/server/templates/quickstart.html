@@ -12,14 +12,14 @@
 
   <h2>1. Get an API key</h2>
   <p>{% if session %}<a href="/app/keys">Create a key</a>{% else %}<a href="/signup">Create an account</a>, then create a key{% endif %} and set it in your environment:</p>
-<pre class="snippet">pip install agent-supervisor-sdk
-export AGENT_SUPERVISOR_API_KEY="as_live_…"
-export AGENT_SUPERVISOR_URL="{{ base_url }}"</pre>
+<pre class="snippet">pip install agent-supra
+export AGENT_SUPRA_API_KEY="as_live_…"
+export AGENT_SUPRA_URL="{{ base_url }}"</pre>
 
   <h2>2. Wrap your agent</h2>
   <p>Create a task with a budget, wrap your model client, and report each test run. <code>rev</code> is anything that changes when the code changes, such as a git commit hash or a hash of the edited files.</p>
 <pre class="snippet">from google import genai
-from agent_supervisor import Client, SupervisedRun, SupervisorPaused
+from agent_supra import Client, SupervisedRun, SupervisorPaused
 
 sup = Client()
 task = sup.create_task("Fix failing checkout tests", budget_usd=3)
