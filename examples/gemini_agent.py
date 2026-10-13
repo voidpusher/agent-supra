@@ -1,6 +1,6 @@
 """A real Gemini agent that fixes a bug, supervised. Use it to test the product.
 
-    pip install agent-supra google-genai pytest
+    pip install git+https://github.com/voidpusher/agent-supra.git google-genai pytest
     export GEMINI_API_KEY=...                  # from https://aistudio.google.com/apikey
     export AGENT_SUPRA_API_KEY=as_live_...  # from your dashboard
     export AGENT_SUPRA_URL=https://your-deployment

@@ -1,6 +1,7 @@
 # Launch checklist
 
-In order. The product is built; these are the things only you can do.
+Current technical status is recorded in [launch-test-report.md](launch-test-report.md).
+The remaining boxes require a provider account, external delivery, or beta feedback.
 
 ## 1. Name: Agent Supra (decided)
 
@@ -11,13 +12,14 @@ In order. The product is built; these are the things only you can do.
 
 ## 2. Test it (docs/testing-with-gemini.md)
 
-- [ ] Tests 1 to 8 pass on your machine against a local server.
-- [ ] Tests 1, 2 and 6 pass again against the deployed service.
+- [x] Local regression suite and synthetic supervisor flows pass.
+- [x] Live solvable and stuck Gemini runs complete and pause as expected.
+- [ ] Real Slack/email delivery and outage recovery are verified with configured destinations.
 
 ## 3. Deploy (docs/deploying.md)
 
-- [ ] Deployed on Render with Postgres; `/healthz` returns ok.
-- [ ] `BASE_URL` set to the real https domain.
+- [x] Deployed on Vercel with Neon Postgres; `/healthz` returns ok.
+- [x] The app uses its production HTTPS URL for links and secure cookies.
 - [ ] Sentry DSN set; trigger an error once and see it arrive.
 - [ ] SMTP set; test alert email arrives (check spam).
 - [ ] Database backups on; one restore tested.
@@ -37,7 +39,7 @@ twine upload dist/*            # needs a PyPI account and API token
 - [ ] Read the privacy page and make sure it's true for how you deployed (host, retention).
 - [ ] Add terms of service and a contact email to the footer.
 - [ ] Record a 60-second demo: the impossible-task run getting paused, then the dashboard.
-- [ ] Push the repo to GitHub as public (if open-sourcing); the CI badge should be green.
+- [x] Public GitHub repository is connected; CI passed for the deployed commit.
 
 ## 6. Private beta (3 to 5 people, about a week)
 
