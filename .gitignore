@@ -11,3 +11,6 @@ venv/
 *.db-shm
 supervisor_report.html
 .pytest_cache/
+.local/
+.uv-cache/
+.vercel/

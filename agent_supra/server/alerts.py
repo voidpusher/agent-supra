@@ -40,13 +40,17 @@ class Alerter:
     def __init__(self, accounts: Accounts, settings: Settings, sender=None):
         self.accounts = accounts
         self.settings = settings
-        self._pool = ThreadPoolExecutor(max_workers=4, thread_name_prefix="alerts")
+        self._pool = None if settings.serverless else ThreadPoolExecutor(max_workers=4, thread_name_prefix="alerts")
         self._send = sender if sender is not None else self._deliver
 
     def __call__(self, item: dict) -> None:
         if item.get("actor") != "supervisor":
             return
-        self._pool.submit(self._safe, item)
+        if self._pool is None:
+            # Complete delivery within the request; serverless instances can freeze afterward.
+            self._safe(item)
+        else:
+            self._pool.submit(self._safe, item)
 
     def _safe(self, item: dict) -> None:
         try:
@@ -66,8 +70,9 @@ class Alerter:
 
     def flush(self, timeout: float = 5.0) -> None:
         """Wait for queued alerts (used by tests and shutdown)."""
-        self._pool.shutdown(wait=True)
-        self._pool = ThreadPoolExecutor(max_workers=4, thread_name_prefix="alerts")
+        if self._pool is not None:
+            self._pool.shutdown(wait=True)
+            self._pool = ThreadPoolExecutor(max_workers=4, thread_name_prefix="alerts")
 
 
 def send_slack(webhook: str, text: str) -> None:

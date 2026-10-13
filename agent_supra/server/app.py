@@ -8,6 +8,7 @@ Configuration comes from environment variables (see settings.py and the README).
 from __future__ import annotations
 
 import logging
+import secrets
 import threading
 from contextlib import asynccontextmanager
 from pathlib import Path
@@ -21,7 +22,7 @@ from sqlalchemy import text
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from .. import __version__
-from . import api, web
+from . import api, db, web
 from .accounts import Accounts
 from .alerts import Alerter
 from .core import Supervisor, SupervisorError
@@ -51,7 +52,7 @@ def create_app(settings: Settings | None = None, supervisor: Supervisor | None =
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
     _init_sentry(settings.sentry_dsn)
 
-    sup = supervisor or Supervisor(settings.database_url)
+    sup = supervisor or Supervisor(db.make_engine(settings.database_url, serverless=settings.serverless))
     accounts = Accounts(sup.engine)
     alerter = Alerter(accounts, settings, sender=alert_sender)
     sup.on_intervention = alerter
@@ -76,7 +77,7 @@ def create_app(settings: Settings | None = None, supervisor: Supervisor | None =
 
     @asynccontextmanager
     async def lifespan(_app):
-        if settings.retention_days > 0:
+        if settings.retention_days > 0 and not settings.serverless:
             threading.Thread(target=retention_loop, name="retention", daemon=True).start()
         yield
         stop.set()
@@ -137,6 +138,15 @@ def create_app(settings: Settings | None = None, supervisor: Supervisor | None =
         with sup.engine.connect() as conn:
             conn.execute(text("SELECT 1"))
         return {"ok": True, "version": __version__}
+
+    @app.get("/api/cron/prune", include_in_schema=False)
+    def prune_expired(request: Request):
+        expected = f"Bearer {settings.cron_secret}"
+        if not settings.cron_secret or not secrets.compare_digest(
+                request.headers.get("authorization", "").encode(), expected.encode()):
+            return JSONResponse({"error": "unauthorized"}, status_code=401)
+        removed = sup.prune(settings.retention_days) if settings.retention_days > 0 else 0
+        return JSONResponse({"ok": True, "removed": removed}, headers={"Cache-Control": "no-store"})
 
     app.include_router(api.build_router(state))
     app.include_router(web.build_router(state))

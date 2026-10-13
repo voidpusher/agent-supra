@@ -22,6 +22,8 @@ services:
         value: https://agent-supra.onrender.com
       - key: APP_NAME
         value: Agent Supra
+      - key: CONTACT_EMAIL
+        value: sanchitp498@gmail.com
       - key: ALLOW_SIGNUP
         value: "true"
       - key: RETENTION_DAYS

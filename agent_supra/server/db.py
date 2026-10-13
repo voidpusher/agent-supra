@@ -10,10 +10,10 @@ from __future__ import annotations
 import time
 
 from sqlalchemy import (BigInteger, Boolean, Column, Float, ForeignKey, Index, Integer, MetaData,
-                        String, Table, Text, UniqueConstraint, create_engine, event, select)
+                        String, Table, Text, UniqueConstraint, create_engine, event, select, text)
 from sqlalchemy.dialects import postgresql, sqlite
 from sqlalchemy.engine import Engine
-from sqlalchemy.pool import StaticPool
+from sqlalchemy.pool import NullPool, StaticPool
 
 SCHEMA_VERSION = 1
 
@@ -143,7 +143,7 @@ def normalize_url(url: str) -> str:
     return url
 
 
-def make_engine(url: str) -> Engine:
+def make_engine(url: str, *, serverless: bool = False) -> Engine:
     url = normalize_url(url)
     if url.startswith("sqlite"):
         kwargs = {"connect_args": {"check_same_thread": False}}
@@ -159,13 +159,18 @@ def make_engine(url: str) -> Engine:
             cur.execute("PRAGMA busy_timeout=5000")
             cur.close()
         return engine
+    if serverless:
+        return create_engine(url, poolclass=NullPool, connect_args={"connect_timeout": 10})
     return create_engine(url, pool_pre_ping=True, pool_size=10, max_overflow=10)
 
 
 def migrate(engine: Engine) -> int:
     """Create missing tables and record the schema version. Safe to run on every start."""
-    metadata.create_all(engine)
     with engine.begin() as conn:
+        if engine.dialect.name == "postgresql":
+            # Serialize cold-start schema setup across serverless instances.
+            conn.execute(text("SELECT pg_advisory_xact_lock(734829105)"))
+        metadata.create_all(conn)
         row = conn.execute(select(schema_info.c.version).where(schema_info.c.id == 1)).first()
         if row is None:
             conn.execute(schema_info.insert().values(id=1, version=SCHEMA_VERSION, applied_at=time.time()))

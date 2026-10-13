@@ -57,6 +57,8 @@ def main() -> int:
     parser.add_argument("--model", default=os.environ.get("GEMINI_MODEL", "gemini-2.5-flash"))
     parser.add_argument("--max-steps", type=int, default=10)
     parser.add_argument("--budget", type=float, default=0.50, help="task budget in USD")
+    parser.add_argument("--fail-mode", choices=("open", "closed"), default="open",
+                        help="whether the agent continues during a supervisor outage")
     args = parser.parse_args()
 
     repo = make_repo()
@@ -64,7 +66,7 @@ def main() -> int:
         with open(repo / "test_shop.py", "a") as f:
             f.write(IMPOSSIBLE_TEST)
 
-    sup = Client()
+    sup = Client(fail_mode=args.fail_mode)
     policy = {"observation_mode": False} if args.pause else None
     label = "impossible" if args.impossible else "solvable"
     task = sup.create_task(f"Gemini fixes apply_discount ({label})", budget_usd=args.budget, policy=policy)

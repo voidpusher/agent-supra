@@ -66,6 +66,7 @@ def build_router(state) -> APIRouter:
             ctx["notice"] = {"kind": kind, "text": text}
         return templates.TemplateResponse(request, name, {
             "app_name": settings.app_name, "base_url": settings.base_url,
+            "contact_email": settings.contact_email,
             "allow_signup": settings.allow_signup, **ctx}, status_code=status)
 
     def current(request: Request) -> Session | None:
@@ -92,6 +93,11 @@ def build_router(state) -> APIRouter:
         return not state.auth_limiter.allow(f"auth:{ip}")
 
     # ------------------------------------------------------------------ public
+    @router.get("/terms", response_class=HTMLResponse)
+    def terms(request: Request):
+        current(request)
+        return page(request, "terms.html")
+
     @router.get("/", response_class=HTMLResponse)
     def landing(request: Request):
         current(request)

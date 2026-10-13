@@ -359,8 +359,8 @@ pre.snippet { font-family: var(--mono); font-size: 13.5px; line-height: 1.55; ma
 .rules p { color: var(--label-2); margin: 2px 0 0; font-size: 15px; }
 .split { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 24px; align-items: start; }
 @media (max-width: 860px) { .split { grid-template-columns: minmax(0, 1fr); } }
-.landing footer { padding: 32px 0 56px; color: var(--label-2); font-size: 14px; }
-.landing footer .wrap { display: flex; gap: 20px; flex-wrap: wrap; justify-content: space-between; }
+.site-footer { padding: 32px 0 56px; color: var(--label-2); font-size: 14px; }
+.site-footer .wrap { display: flex; gap: 20px; flex-wrap: wrap; justify-content: space-between; }
 .prose { max-width: 70ch; }
 .prose h1 { margin-bottom: 8px; }
 .prose h2 { margin: 36px 0 10px; }
@@ -401,7 +401,7 @@ pre.snippet { font-family: var(--mono); font-size: 13.5px; line-height: 1.55; ma
 .w-select { width: 190px; }
 .btn.sm { min-height: 30px; padding: 0 14px; font-size: 13px; }
 .state.lg { font-size: 15px; padding: 5px 14px; }
-.doc { padding-top: 48px; padding-bottom: 80px; }
+.landing main.doc { padding-top: 48px; padding-bottom: 80px; }
 .panel.warn { background: linear-gradient(color-mix(in srgb, var(--orange) 10%, transparent), color-mix(in srgb, var(--orange) 10%, transparent)), var(--glass); }
 .panel.danger-zone { background: linear-gradient(color-mix(in srgb, var(--red) 7%, transparent), color-mix(in srgb, var(--red) 7%, transparent)), var(--glass); }
 .panel.danger-zone h2 { color: var(--red-ink); }

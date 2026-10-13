@@ -1,0 +1,12 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "fastapi",
+  "installCommand": "uv pip install .[server,sentry]",
+  "functions": {
+    "app.py": {
+      "maxDuration": 60,
+      "excludeFiles": "{.local/**,.uv-cache/**,.venv/**,tests/**,docs/**,dist/**,build/**,examples/**,*.db,*.db-*,.env,.env.*,supervisor_report.html}"
+    }
+  },
+  "crons": [{"path": "/api/cron/prune", "schedule": "0 3 * * *"}]
+}

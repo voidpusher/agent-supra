@@ -27,7 +27,7 @@ def stuck_run(client, key, policy=None, attempts=4):
 
 # ---------------------------------------------------------------- public pages
 def test_public_pages_render(server):
-    for path in ("/", "/privacy", "/docs/quickstart", "/login", "/signup"):
+    for path in ("/", "/privacy", "/terms", "/docs/quickstart", "/login", "/signup"):
         r = server.get(path)
         assert r.status_code == 200, path
         assert "Content-Security-Policy" in r.headers

@@ -18,6 +18,9 @@ class Settings:
     database_url: str = "sqlite:///supervisor.db"
     base_url: str = "http://localhost:8000"
     app_name: str = "Agent Supra"
+    contact_email: str = "sanchitp498@gmail.com"
+    serverless: bool = False
+    cron_secret: str | None = None
     allow_signup: bool = True
     secure_cookies: bool = False
     retention_days: int = 30
@@ -33,12 +36,21 @@ class Settings:
 
     @classmethod
     def from_env(cls) -> "Settings":
-        base_url = os.environ.get("BASE_URL", "http://localhost:8000").rstrip("/")
+        serverless = os.environ.get("VERCEL") == "1"
+        host = (os.environ.get("VERCEL_PROJECT_PRODUCTION_URL")
+                if os.environ.get("VERCEL_ENV") == "production" else os.environ.get("VERCEL_URL"))
+        default_url = f"https://{host}" if serverless and host else "http://localhost:8000"
+        base_url = (os.environ.get("BASE_URL") or default_url).rstrip("/")
+        database_url = os.environ.get("DATABASE_URL") or os.environ.get("AGENT_SUPRA_DB_URL") or "sqlite:///supervisor.db"
+        if serverless and not database_url.startswith(("postgres://", "postgresql://", "postgresql+psycopg://")):
+            raise ValueError("Vercel requires a persistent PostgreSQL DATABASE_URL; SQLite is local-only.")
         return cls(
-            database_url=os.environ.get("DATABASE_URL", os.environ.get("AGENT_SUPRA_DB_URL",
-                                                                       "sqlite:///supervisor.db")),
+            database_url=database_url,
+            serverless=serverless,
+            cron_secret=os.environ.get("CRON_SECRET") or None,
             base_url=base_url,
             app_name=os.environ.get("APP_NAME", "Agent Supra"),
+            contact_email=os.environ.get("CONTACT_EMAIL", "sanchitp498@gmail.com"),
             allow_signup=_bool("ALLOW_SIGNUP", True),
             secure_cookies=_bool("SECURE_COOKIES", base_url.startswith("https://")),
             retention_days=int(os.environ.get("RETENTION_DAYS", "30")),

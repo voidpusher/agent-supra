@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Terms | {{ app_name }}{% endblock %}
+{% block body_class %}landing{% endblock %}
+{% block body %}
+<header><div class="wrap">
+  <a class="brand" href="/"><span class="brand-mark" aria-hidden="true"></span>{{ app_name }}</a>
+  <nav aria-label="Main"><a href="/docs/quickstart">Quickstart</a>{% if session %}<a class="btn" href="/app">Open dashboard</a>{% else %}<a href="/login">Log in</a>{% endif %}</nav>
+</div></header>
+<main class="wrap prose doc">
+  <h1>Terms of service</h1>
+  <p class="muted">Private beta draft · 13 October 2026</p>
+  <p>{{ app_name }} is operated by Sanchit. These terms describe the hosted private beta. Contact <a href="mailto:{{ contact_email }}">{{ contact_email }}</a> with questions.</p>
+  <h2>Your account</h2>
+  <p>Use an email address you control. Keep your password and API keys private, and revoke any key that may have been exposed. You are responsible for the agents and activity connected to your workspace.</p>
+  <h2>Using the service</h2>
+  <p>Connect agents and repositories you are authorized to use. Do not use the service for unlawful activity, attempt to access another workspace, disrupt the service, or bypass its access controls. Avoid putting secrets or sensitive personal information in task names or test IDs.</p>
+  <h2>What supervision can do</h2>
+  <p>Detection can miss a stuck agent or flag a healthy one. Pausing is cooperative: an in-flight model call or tool may finish, and calls made outside the wrapper are not stopped. Spend is an estimate, and concurrent calls can exceed a budget. Keep your model provider's own spending limits enabled and review flags before relying on automatic pauses.</p>
+  <h2>Beta availability and costs</h2>
+  <p>The hosted service is free during this private beta. You pay your model provider directly. The beta may change or be interrupted; it has no uptime or detection guarantee. Any future paid plan will require separate notice and agreement before charges begin.</p>
+  <h2>Your data</h2>
+  <p>You retain ownership of your data. We process account details and supervision events to operate the service as described in the <a href="/privacy">privacy page</a>. You can delete your account in Settings or contact us for help. Keep copies of information you need outside the service.</p>
+  <h2>Ending use and changes</h2>
+  <p>You may stop using the service at any time. We may suspend access for misuse or to protect the service, and will provide notice where practical. Material changes to these terms will be communicated before they take effect.</p>
+  <h2>Responsibility</h2>
+  <p>To the extent permitted by applicable law, the beta is provided as available without warranties. No term removes rights or responsibilities that cannot legally be excluded. The open source SDK is licensed separately under the MIT license.</p>
+  <h2>Contact</h2>
+  <p>For support, privacy requests, or beta feedback, email <a href="mailto:{{ contact_email }}">{{ contact_email }}</a>.</p>
+</main>
+{% endblock %}

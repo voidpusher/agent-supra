@@ -18,6 +18,10 @@ Two scripted agents fix a real bug in a tiny repo, running real pytest. One edit
 
 ## Run the service locally
 
+On Windows, see [the local PowerShell guide](docs/windows-local.md). The helper
+`python scripts/local.py serve` loads the repository's `.env` file; the bare
+`agent-supra serve` command reads exported environment variables.
+
 ```bash
 cp .env.example .env
 agent-supra serve           # SQLite by default; http://localhost:8000
