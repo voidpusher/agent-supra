@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% block title %}Settings | {{ app_name }}{% endblock %}
+{% block content %}
+<div class="page-head"><div><h1>Settings</h1>
+<p class="muted" style="margin:4px 0 0">Defaults for every task in {{ ws.name }}. A task can override them when it's created.</p></div></div>
+
+<form method="post" action="/app/settings">
+<input type="hidden" name="csrf" value="{{ session.csrf }}">
+
+<section class="panel">
+  <h2>Loop detection</h2>
+  <div class="field">
+    <label class="check"><input type="checkbox" name="observation_mode" value="1" {% if policy.observation_mode %}checked{% endif %}>
+      <span>Observation mode<span class="hint" style="display:block">Rules only flag runs; nothing is paused. Leave this on until you've checked a week of flags. Budgets and call caps are enforced either way.</span></span></label>
+  </div>
+  <div class="grid2">
+    <div class="field"><label for="threshold">Attempts before a flag</label>
+      <input id="threshold" name="threshold" type="number" min="2" max="50" value="{{ policy.threshold }}">
+      <p class="hint">How many attempts in a row with the same failing tests count as stuck.</p></div>
+    <div class="field"><label for="ceiling">Context ceiling (tokens)</label>
+      <input id="ceiling" name="context_token_ceiling" type="number" min="1000" step="1000" value="{{ policy.context_token_ceiling or '' }}" placeholder="No ceiling">
+      <p class="hint">Flag any single model call with a bigger input than this.</p></div>
+  </div>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Rule</th><th>What it catches</th><th style="width:170px">When it fires</th></tr></thead>
+    <tbody>
+    {% for rule, text in rules %}
+      <tr><td><strong>{{ rule | rule_label }}</strong></td><td class="small muted">{{ text }}</td>
+        <td><select name="rule_{{ rule }}" aria-label="When {{ rule | rule_label }} fires">
+          {% for v, l in [("pause", "Pause the run"), ("observe", "Flag only"), ("off", "Off")] %}
+          <option value="{{ v }}" {% if policy.rules[rule] == v %}selected{% endif %}>{{ l }}</option>{% endfor %}
+        </select></td></tr>
+    {% endfor %}
+    </tbody>
+  </table></div>
+</section>
+
+<section class="panel">
+  <h2>Alerts</h2>
+  <div class="grid2">
+    <div class="field"><label for="slack">Slack webhook URL</label>
+      <input id="slack" name="slack_webhook" type="url" value="{{ ws.slack_webhook or '' }}" placeholder="https://hooks.slack.com/services/…">
+      <p class="hint">Create an incoming webhook in Slack and paste it here.</p></div>
+    <div class="field"><label for="email">Alert email</label>
+      <input id="email" name="alert_email" type="email" value="{{ ws.alert_email or '' }}" placeholder="you@company.com">
+      <p class="hint">{% if smtp %}Sent from this server's mail account.{% else %}Email isn't configured on this server yet (SMTP settings).{% endif %}</p></div>
+  </div>
+  <label class="check"><input type="checkbox" name="alert_on_flags" value="1" {% if ws.alert_on_flags %}checked{% endif %}>
+    <span>Also alert on flags, not just pauses</span></label>
+</section>
+
+<section class="panel">
+  <h2>Model prices</h2>
+  <p class="muted small">Used to estimate spend. Built in: current Gemini prices. Add any other model as <code>model-name input output</code>, in USD per million tokens, one per line.</p>
+  <textarea name="prices" aria-label="Model prices" placeholder="my-model 1.25 10">{{ prices_text }}</textarea>
+</section>
+
+<section class="panel">
+  <div class="field" style="max-width:420px"><label for="ws-name">Workspace name</label>
+    <input id="ws-name" name="name" type="text" maxlength="200" value="{{ ws.name }}" required></div>
+  <div class="actions"><button class="btn" type="submit">Save settings</button></div>
+</section>
+</form>
+
+<section class="panel">
+  <h2>Test your alerts</h2>
+  <p class="muted small">Sends a sample "run paused" alert to the Slack webhook and email saved above.</p>
+  <form method="post" action="/app/settings/test-alert">
+    <input type="hidden" name="csrf" value="{{ session.csrf }}">
+    <button class="btn quiet" type="submit">Send test alert</button>
+  </form>
+</section>
+
+<section class="panel">
+  <h2>Change password</h2>
+  <form method="post" action="/app/settings/password" class="grid2" style="align-items:end">
+    <input type="hidden" name="csrf" value="{{ session.csrf }}">
+    <div class="field"><label for="cur">Current password</label><input id="cur" name="current" type="password" autocomplete="current-password" required></div>
+    <div class="field"><label for="new">New password</label><input id="new" name="new" type="password" minlength="10" autocomplete="new-password" required></div>
+    <div class="field"><button class="btn quiet" type="submit">Change password</button></div>
+  </form>
+</section>
+
+<section class="panel" style="border-color:var(--red)">
+  <h2>Delete account</h2>
+  <p class="muted small">Deletes this workspace, every run, event and API key, and your login. This can't be undone.</p>
+  <form method="post" action="/app/settings/delete" class="actions" style="align-items:flex-end">
+    <input type="hidden" name="csrf" value="{{ session.csrf }}">
+    <div style="flex:1;min-width:220px"><label for="confirm">Type <strong>{{ ws.name }}</strong> to confirm</label>
+      <input id="confirm" name="confirm" type="text" required autocomplete="off"></div>
+    <button class="btn danger" type="submit">Delete everything</button>
+  </form>
+</section>
+{% endblock %}

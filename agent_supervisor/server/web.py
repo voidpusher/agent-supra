@@ -1,0 +1,399 @@
+"""Dashboard and public pages (server-rendered, cookie sessions, CSRF-checked forms)."""
+
+from __future__ import annotations
+
+import secrets
+import time
+from datetime import datetime, timezone
+from pathlib import Path
+
+from fastapi import APIRouter, Form, Request
+from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.templating import Jinja2Templates
+from markupsafe import Markup
+
+from .. import pricing
+from ..detector import HEURISTIC_RULES, merge_policy
+from ..present import RULE_HELP, describe_event, rule_label
+from .accounts import Session
+from .alerts import compose, valid_slack_webhook
+from .core import SupervisorError
+
+SESSION_COOKIE = "as_session"
+PRE_CSRF_COOKIE = "as_csrf"
+NOTICES = {
+    "saved": ("success", "Settings saved."),
+    "continued": ("success", "Run continued."),
+    "paused": ("success", "Run paused."),
+    "stopped": ("success", "Run stopped."),
+    "revoked": ("success", "Key revoked. Agents using it will get a 401 on their next request."),
+    "password": ("success", "Password changed. Other sessions were logged out."),
+    "alert-sent": ("success", "Test alert queued. Check Slack and your inbox."),
+    "alert-none": ("error", "Add a Slack webhook or alert email first, then save."),
+}
+
+
+def _ago(ts: float | None) -> str:
+    if not ts:
+        return ""
+    seconds = max(0, time.time() - ts)
+    for limit, unit, size in ((60, "s", 1), (3600, "min", 60), (86400, "h", 3600), (86400 * 30, "d", 86400)):
+        if seconds < limit:
+            return f"{int(seconds // size)} {unit} ago" if unit != "s" else "just now"
+    return datetime.fromtimestamp(ts, timezone.utc).strftime("%d %b %Y")
+
+
+def _datetime(ts: float | None) -> str:
+    return datetime.fromtimestamp(ts, timezone.utc).strftime("%d %b %Y, %H:%M UTC") if ts else ""
+
+
+def build_router(state) -> APIRouter:
+    router = APIRouter()
+    templates = Jinja2Templates(directory=str(Path(__file__).parent / "templates"))
+    env = templates.env
+    env.filters.update({
+        "usd2": lambda m: pricing.usd(m, 2) if m is None or m >= 10_000 or m == 0 else pricing.usd(m, 4),
+        "ago": _ago, "datetime": _datetime, "rule_label": rule_label,
+        "describe": lambda e: Markup(describe_event(e)),
+    })
+    settings, sup, accounts = state.settings, state.supervisor, state.accounts
+
+    def page(request: Request, name: str, status: int = 200, **ctx) -> HTMLResponse:
+        ctx.setdefault("session", getattr(request.state, "session", None))
+        code = request.query_params.get("notice")
+        if code in NOTICES and "notice" not in ctx:
+            kind, text = NOTICES[code]
+            ctx["notice"] = {"kind": kind, "text": text}
+        return templates.TemplateResponse(request, name, {
+            "app_name": settings.app_name, "base_url": settings.base_url,
+            "allow_signup": settings.allow_signup, **ctx}, status_code=status)
+
+    def current(request: Request) -> Session | None:
+        session = accounts.session(request.cookies.get(SESSION_COOKIE))
+        request.state.session = session
+        return session
+
+    def login_redirect() -> RedirectResponse:
+        return RedirectResponse("/login", status_code=303)
+
+    def check_csrf(session: Session, token: str) -> bool:
+        return bool(token) and secrets.compare_digest(session.csrf, token)
+
+    def forbidden(request: Request) -> HTMLResponse:
+        return page(request, "error.html", 403, title="That form expired",
+                    message="Reload the page and try again.")
+
+    def set_session(response, token: str) -> None:
+        response.set_cookie(SESSION_COOKIE, token, max_age=14 * 86400, httponly=True,
+                            secure=settings.secure_cookies, samesite="lax", path="/")
+
+    def auth_limited(request: Request) -> bool:
+        ip = request.client.host if request.client else "unknown"
+        return not state.auth_limiter.allow(f"auth:{ip}")
+
+    # ------------------------------------------------------------------ public
+    @router.get("/", response_class=HTMLResponse)
+    def landing(request: Request):
+        current(request)
+        return page(request, "landing.html")
+
+    @router.get("/privacy", response_class=HTMLResponse)
+    def privacy(request: Request):
+        current(request)
+        return page(request, "privacy.html", retention_days=settings.retention_days)
+
+    @router.get("/docs/quickstart", response_class=HTMLResponse)
+    def quickstart(request: Request):
+        current(request)
+        return page(request, "quickstart.html", nav="docs")
+
+    def auth_page(request: Request, mode: str, error: str | None = None, email: str = "", status: int = 200):
+        token = request.cookies.get(PRE_CSRF_COOKIE) or secrets.token_urlsafe(24)
+        response = page(request, "auth.html", status, mode=mode, error=error, email=email, csrf=token,
+                        heading="Create your account" if mode == "signup" else "Log in",
+                        button="Create account" if mode == "signup" else "Log in",
+                        action=f"/{mode}")
+        response.set_cookie(PRE_CSRF_COOKIE, token, max_age=3600, httponly=True,
+                            secure=settings.secure_cookies, samesite="strict", path="/")
+        return response
+
+    def pre_csrf_ok(request: Request, token: str) -> bool:
+        cookie = request.cookies.get(PRE_CSRF_COOKIE)
+        return bool(cookie and token) and secrets.compare_digest(cookie, token)
+
+    @router.get("/login", response_class=HTMLResponse)
+    def login_form(request: Request):
+        if current(request):
+            return RedirectResponse("/app", status_code=303)
+        return auth_page(request, "login")
+
+    @router.post("/login")
+    def login(request: Request, email: str = Form(""), password: str = Form(""), csrf: str = Form("")):
+        request.state.session = None
+        if not pre_csrf_ok(request, csrf):
+            return auth_page(request, "login", "That form expired. Try again.", email, 403)
+        if auth_limited(request):
+            return auth_page(request, "login", "Too many attempts. Wait a minute and try again.", email, 429)
+        user_id = accounts.authenticate(email, password)
+        if not user_id:
+            return auth_page(request, "login", "That email and password don't match an account.", email, 401)
+        response = RedirectResponse("/app", status_code=303)
+        set_session(response, accounts.create_session(user_id))
+        return response
+
+    @router.get("/signup", response_class=HTMLResponse)
+    def signup_form(request: Request):
+        if current(request):
+            return RedirectResponse("/app", status_code=303)
+        if not settings.allow_signup:
+            return page(request, "error.html", 403, title="Sign-ups are closed",
+                        message="This server isn't accepting new accounts right now.")
+        return auth_page(request, "signup")
+
+    @router.post("/signup")
+    def signup(request: Request, email: str = Form(""), password: str = Form(""), csrf: str = Form("")):
+        request.state.session = None
+        if not settings.allow_signup:
+            return page(request, "error.html", 403, title="Sign-ups are closed",
+                        message="This server isn't accepting new accounts right now.")
+        if not pre_csrf_ok(request, csrf):
+            return auth_page(request, "signup", "That form expired. Try again.", email, 403)
+        if auth_limited(request):
+            return auth_page(request, "signup", "Too many attempts. Wait a minute and try again.", email, 429)
+        try:
+            user_id, _ = accounts.signup(email, password)
+        except SupervisorError as exc:
+            return auth_page(request, "signup", str(exc).capitalize() + ".", email, 400)
+        response = RedirectResponse("/app/keys", status_code=303)
+        set_session(response, accounts.create_session(user_id))
+        return response
+
+    @router.post("/logout")
+    def logout(request: Request, csrf: str = Form("")):
+        session = current(request)
+        if session and check_csrf(session, csrf):
+            accounts.end_session(request.cookies.get(SESSION_COOKIE))
+        response = RedirectResponse("/", status_code=303)
+        response.delete_cookie(SESSION_COOKIE, path="/")
+        return response
+
+    # ------------------------------------------------------------------ runs
+    @router.get("/app", response_class=HTMLResponse)
+    def runs_page(request: Request, state_: str = "", offset: int = 0):
+        session = current(request)
+        if not session:
+            return login_redirect()
+        state_filter = request.query_params.get("state", "")
+        if state_filter not in ("", "paused", "running", "completed", "failed", "stopped"):
+            state_filter = ""
+        offset = max(0, offset)
+        rows = sup.runs(workspace_id=session.workspace_id, state=state_filter or None, limit=101, offset=offset)
+        paused = len(sup.runs(workspace_id=session.workspace_id, state="paused", limit=500))
+        return page(request, "runs.html", nav="runs", runs=rows[:100], more=len(rows) > 100,
+                    next_offset=offset + 100, state=state_filter, paused_count=paused,
+                    stats=sup.stats(workspace_id=session.workspace_id))
+
+    @router.get("/app/runs/{run_id}", response_class=HTMLResponse)
+    def run_page(request: Request, run_id: str):
+        session = current(request)
+        if not session:
+            return login_redirect()
+        try:
+            tl = sup.timeline(run_id, workspace_id=session.workspace_id)
+        except SupervisorError:
+            return page(request, "error.html", 404, title="Run not found",
+                        message="It may have been deleted, or it belongs to another workspace.")
+        running = 0
+        events = []
+        for e in tl["events"]:
+            cost = e["data"].get("cost_micros") if e["type"] == "model.call" else None
+            running += int(cost or 0)
+            is_call = e["type"] == "model.call"
+            events.append({**e, "cost": (pricing.usd(cost) if is_call else ""),
+                           "running": pricing.usd(running) if is_call else ""})
+        evidence = {eid for i in tl["interventions"] for eid in i["evidence"]}
+        return page(request, "run.html", nav="runs", run=tl["run"], task=tl["task"], events=events,
+                    interventions=tl["interventions"], evidence=evidence, task_spend=tl["task_spend"])
+
+    def run_action(request: Request, run_id: str, csrf: str, fn, notice: str):
+        session = current(request)
+        if not session:
+            return login_redirect()
+        if not check_csrf(session, csrf):
+            return forbidden(request)
+        try:
+            fn(session)
+        except SupervisorError as exc:
+            return page(request, "error.html", exc.status, title="That didn't work",
+                        message=str(exc).capitalize() + ".")
+        return RedirectResponse(f"/app/runs/{run_id}?notice={notice}", status_code=303)
+
+    @router.post("/app/runs/{run_id}/continue")
+    def continue_run(request: Request, run_id: str, csrf: str = Form(""), reason: str = Form(""),
+                     add_budget_usd: float = Form(0.0)):
+        return run_action(request, run_id, csrf, lambda s: sup.continue_run(
+            run_id, s.email, reason, add_budget_usd, workspace_id=s.workspace_id), "continued")
+
+    @router.post("/app/runs/{run_id}/pause")
+    def pause_run(request: Request, run_id: str, csrf: str = Form(""), reason: str = Form("")):
+        return run_action(request, run_id, csrf, lambda s: sup.pause(
+            run_id, s.email, reason, workspace_id=s.workspace_id), "paused")
+
+    @router.post("/app/runs/{run_id}/stop")
+    def stop_run(request: Request, run_id: str, csrf: str = Form(""), reason: str = Form("")):
+        return run_action(request, run_id, csrf, lambda s: sup.stop(
+            run_id, s.email, reason, workspace_id=s.workspace_id), "stopped")
+
+    # ------------------------------------------------------------------ keys
+    @router.get("/app/keys", response_class=HTMLResponse)
+    def keys_page(request: Request):
+        session = current(request)
+        if not session:
+            return login_redirect()
+        return page(request, "keys.html", nav="keys", keys=accounts.list_keys(session.workspace_id))
+
+    @router.post("/app/keys", response_class=HTMLResponse)
+    def create_key(request: Request, csrf: str = Form(""), name: str = Form("")):
+        session = current(request)
+        if not session:
+            return login_redirect()
+        if not check_csrf(session, csrf):
+            return forbidden(request)
+        _, token = accounts.create_key(session.workspace_id, name)
+        response = page(request, "keys.html", nav="keys", new_key=token,
+                        keys=accounts.list_keys(session.workspace_id))
+        response.headers["Cache-Control"] = "no-store"
+        return response
+
+    @router.post("/app/keys/{key_id}/revoke")
+    def revoke_key(request: Request, key_id: str, csrf: str = Form("")):
+        session = current(request)
+        if not session:
+            return login_redirect()
+        if not check_csrf(session, csrf):
+            return forbidden(request)
+        try:
+            accounts.revoke_key(session.workspace_id, key_id)
+        except SupervisorError:
+            pass
+        return RedirectResponse("/app/keys?notice=revoked", status_code=303)
+
+    # ------------------------------------------------------------------ settings
+    def settings_page(request: Request, session: Session, error: str | None = None, status: int = 200):
+        ws = accounts.workspace(session.workspace_id)
+        prices_text = "\n".join(f"{m} {v[0] if isinstance(v, list) else v['input']} "
+                                f"{v[1] if isinstance(v, list) else v['output']}" for m, v in ws["prices"].items())
+        return page(request, "settings.html", status, nav="settings", ws=ws,
+                    policy=merge_policy(ws["default_policy"]), rules=RULE_HELP,
+                    prices_text=prices_text, smtp=bool(settings.smtp_host),
+                    notice={"kind": "error", "text": error} if error else None)
+
+    @router.get("/app/settings", response_class=HTMLResponse)
+    def settings_get(request: Request):
+        session = current(request)
+        if not session:
+            return login_redirect()
+        return settings_page(request, session)
+
+    @router.post("/app/settings", response_class=HTMLResponse)
+    async def settings_post(request: Request):
+        session = current(request)
+        if not session:
+            return login_redirect()
+        form = await request.form()
+        if not check_csrf(session, str(form.get("csrf", ""))):
+            return forbidden(request)
+        try:
+            threshold = int(form.get("threshold") or 4)
+            if not 2 <= threshold <= 50:
+                raise ValueError
+        except ValueError:
+            return settings_page(request, session, "Attempts before a flag must be a whole number from 2 to 50.", 400)
+        ceiling_raw = str(form.get("context_token_ceiling") or "").strip()
+        try:
+            ceiling = int(ceiling_raw) if ceiling_raw else None
+            if ceiling is not None and ceiling < 1000:
+                raise ValueError
+        except ValueError:
+            return settings_page(request, session, "The context ceiling must be at least 1,000 tokens, or empty.", 400)
+        rules = {}
+        for rule, _ in RULE_HELP:
+            value = str(form.get(f"rule_{rule}", ""))
+            if value in ("pause", "observe", "off"):
+                rules[rule] = value
+        policy = {"observation_mode": form.get("observation_mode") == "1", "threshold": threshold,
+                  "context_token_ceiling": ceiling, "rules": rules}
+        prices = {}
+        for number, line in enumerate(str(form.get("prices", "")).splitlines(), start=1):
+            parts = line.split()
+            if not parts:
+                continue
+            try:
+                model, inp, out = parts[0], float(parts[1]), float(parts[2])
+                if len(parts) != 3 or inp < 0 or out < 0:
+                    raise ValueError
+            except (ValueError, IndexError):
+                return settings_page(request, session, f"Price line {number} should look like: my-model 1.25 10", 400)
+            prices[pricing.normalize(model)] = [inp, out]
+        slack = str(form.get("slack_webhook", "")).strip() or None
+        if not valid_slack_webhook(slack):
+            return settings_page(request, session, "The Slack webhook must start with https://hooks.slack.com/.", 400)
+        email = str(form.get("alert_email", "")).strip() or None
+        if email and ("@" not in email or len(email) > 320):
+            return settings_page(request, session, "Enter a valid alert email, or leave it empty.", 400)
+        name = str(form.get("name", "")).strip()[:200] or session.workspace_name
+        accounts.update_workspace(session.workspace_id, name=name, default_policy=policy, prices=prices,
+                                  slack_webhook=slack, alert_email=email,
+                                  alert_on_flags=form.get("alert_on_flags") == "1")
+        return RedirectResponse("/app/settings?notice=saved", status_code=303)
+
+    @router.post("/app/settings/test-alert")
+    def test_alert(request: Request, csrf: str = Form("")):
+        session = current(request)
+        if not session:
+            return login_redirect()
+        if not check_csrf(session, csrf):
+            return forbidden(request)
+        ws = accounts.workspace(session.workspace_id)
+        if not ws.get("slack_webhook") and not ws.get("alert_email"):
+            return RedirectResponse("/app/settings?notice=alert-none", status_code=303)
+        sample = {"run_id": "run_example", "rule": "no_progress", "action": "pause", "actor": "supervisor",
+                  "message": "Test alert: the same 2 tests failed on 4 attempts across 4 code versions.",
+                  "spend_micros": 140_000, "objective": "Example task", "workspace_id": session.workspace_id}
+        state.alerter(sample)
+        return RedirectResponse("/app/settings?notice=alert-sent", status_code=303)
+
+    @router.post("/app/settings/password", response_class=HTMLResponse)
+    def change_password(request: Request, csrf: str = Form(""), current_: str = Form("", alias="current"),
+                        new: str = Form("")):
+        session = current(request)
+        if not session:
+            return login_redirect()
+        if not check_csrf(session, csrf):
+            return forbidden(request)
+        try:
+            accounts.change_password(session.user_id, current_, new)
+        except SupervisorError as exc:
+            return settings_page(request, session, str(exc).capitalize() + ".", 400)
+        response = RedirectResponse("/login", status_code=303)
+        response.delete_cookie(SESSION_COOKIE, path="/")
+        return response
+
+    @router.post("/app/settings/delete", response_class=HTMLResponse)
+    def delete_account(request: Request, csrf: str = Form(""), confirm: str = Form("")):
+        session = current(request)
+        if not session:
+            return login_redirect()
+        if not check_csrf(session, csrf):
+            return forbidden(request)
+        if confirm.strip() != session.workspace_name:
+            return settings_page(request, session, "The name you typed doesn't match the workspace name.", 400)
+        accounts.delete_workspace(session.workspace_id, session.user_id)
+        response = RedirectResponse("/", status_code=303)
+        response.delete_cookie(SESSION_COOKIE, path="/")
+        return response
+
+    return router
+
+
+__all__ = ["build_router", "compose"]

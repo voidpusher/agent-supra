@@ -1,0 +1,52 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "agent-supervisor-sdk"
+version = "1.0.0"
+description = "Notice when an unattended AI agent is stuck, pause it, and show why."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "Sanchit" }]
+keywords = ["ai agents", "llm", "gemini", "monitoring", "cost control", "observability"]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent",
+  "Topic :: Software Development :: Testing",
+]
+# The SDK itself has no dependencies.
+dependencies = []
+
+[project.optional-dependencies]
+server = [
+  "fastapi>=0.110",
+  "uvicorn[standard]>=0.29",
+  "sqlalchemy>=2.0",
+  "psycopg[binary]>=3.1",
+  "jinja2>=3.1",
+  "python-multipart>=0.0.9",
+]
+sentry = ["sentry-sdk[fastapi]>=2.0"]
+dev = [
+  "agent-supervisor-sdk[server]",
+  "pytest>=8",
+  "httpx>=0.27",
+  "google-genai>=1.0",
+]
+
+[project.scripts]
+agent-supervisor = "agent_supervisor.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["agent_supervisor*"]
+
+[tool.setuptools.package-data]
+"agent_supervisor.server" = ["templates/*.html", "static/*"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+filterwarnings = ["ignore::DeprecationWarning"]

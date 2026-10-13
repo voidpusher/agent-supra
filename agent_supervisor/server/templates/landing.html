@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% block title %}{{ app_name }}: stop paying for agents that are stuck{% endblock %}
+{% block head %}<meta name="description" content="{{ app_name }} notices when an unattended AI agent stops making progress, pauses it, and shows you why.">{% endblock %}
+{% block body_class %}landing{% endblock %}
+{% block body %}
+<header>
+  <div class="wrap">
+    <a class="brand" href="/"><span class="brand-mark" aria-hidden="true"></span>{{ app_name }}</a>
+    <nav aria-label="Main">
+      <a class="wide-only" href="/docs/quickstart">Quickstart</a>
+      <a class="wide-only" href="/privacy">Privacy</a>
+      {% if session %}<a class="btn" href="/app">Open dashboard</a>
+      {% else %}<a href="/login">Log in</a>{% if allow_signup %}<a class="btn" href="/signup">Sign up</a>{% endif %}{% endif %}
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="hero">
+    <div>
+      <h1>Your agent tried the same fix four times. Nobody was watching.</h1>
+      <p class="lede">{{ app_name }} watches unattended AI agents, notices when they stop making progress, and pauses them before more money goes into a loop. You get the evidence, not a guess.</p>
+      <div class="actions">
+        {% if allow_signup %}<a class="btn" href="/signup">Create a free account</a>{% endif %}
+        <a class="btn quiet" href="/docs/quickstart">Read the quickstart</a>
+      </div>
+    </div>
+
+    <figure class="trace" aria-label="Example: an agent's attempts while fixing a failing test">
+      <div class="trace-head"><span>Task: fix apply_discount</span><span class="model">gemini-2.5-flash</span></div>
+      <div class="trace-row"><span class="n">1</span><span class="hash">951b120</span><span class="fail">ten_percent, full_discount</span><span class="cost">$0.006</span></div>
+      <div class="trace-row same"><span class="n">2</span><span class="hash">861b417</span><span class="fail">ten_percent, full_discount</span><span class="cost">$0.008</span></div>
+      <div class="trace-row same"><span class="n">3</span><span class="hash">377736e</span><span class="fail">ten_percent, full_discount</span><span class="cost">$0.011</span></div>
+      <div class="trace-row same"><span class="n">4</span><span class="hash">6016d2c</span><span class="fail">ten_percent, full_discount</span><span class="cost">$0.014</span></div>
+      <div class="trace-stop"><strong>Paused.</strong> Same 2 tests failing on 4 attempts, across 4 different versions of the code. No more model calls until you decide.</div>
+      <figcaption>Each row is one attempt: code version, failing tests, cost.</figcaption>
+    </figure>
+  </section>
+
+  <section class="band">
+    <h2>A spend cap can't tell stuck from busy</h2>
+    <p class="intro">An agent working through a hard bug and an agent going in circles both just look like money being spent. {{ app_name }} watches what each attempt achieved, so a run that's making progress keeps going, and a run that isn't gets stopped with an explanation.</p>
+    <ol class="steps">
+      <li><h3>Install the SDK</h3><p class="muted"><code>pip install agent-supervisor-sdk</code>. No dependencies; it works with Gemini, OpenAI and Anthropic clients.</p></li>
+      <li><h3>Wrap your agent</h3><p class="muted">Wrap your model client, then report each test run. A few lines in the loop you already have.</p></li>
+      <li><h3>Review what it catches</h3><p class="muted">Start in observation mode. When the flags look right, let it pause runs, and get a Slack message when it does.</p></li>
+    </ol>
+  </section>
+
+  <section class="band split">
+    <div>
+      <h2>What it watches for</h2>
+      <p class="intro">Plain rules you can read, not a second AI guessing. Each one can pause, only flag, or be switched off.</p>
+      <div class="rules" style="grid-template-columns:1fr">
+        <div><h3>No progress</h3><p>The same tests keep failing while the agent keeps changing the code.</p></div>
+        <div><h3>Exact repeats</h3><p>The same failure again with nothing changed, or the same tool failing the same way.</p></div>
+        <div><h3>Going in circles</h3><p>The agent flips between two versions of the code.</p></div>
+        <div><h3>Context running away</h3><p>Every call sends more tokens than the last, with nothing to show for it.</p></div>
+        <div><h3>Budget and call caps</h3><p>A hard limit per task, shared with any sub-agents it starts.</p></div>
+      </div>
+    </div>
+    <div>
+      <h2>Add it to a Gemini agent</h2>
+      <p class="intro">Anthropic and OpenAI clients work the same way.</p>
+<pre class="snippet">from google import genai
+from agent_supervisor import (
+    Client, SupervisedRun, SupervisorPaused)
+
+sup = Client()  # reads AGENT_SUPERVISOR_API_KEY
+task = sup.create_task("Fix checkout tests",
+                       budget_usd=3)
+
+with SupervisedRun(sup, task) as run:
+    gemini = run.wrap_gemini(genai.Client())
+    try:
+        while True:
+            run.check()
+            reply = gemini.models.generate_content(
+                model="gemini-2.5-flash", contents=prompt)
+            apply_fix(reply.text)
+            result = run_tests()
+            run.report_tests(result.all, result.failing,
+                             rev=git_rev())
+            if not result.failing:
+                run.finish("success")
+                break
+    except SupervisorPaused as paused:
+        print(paused.reason)</pre>
+    </div>
+  </section>
+
+  <section class="band split">
+    <div>
+      <h2>What it stores</h2>
+      <p class="muted">Token counts, test names, pass or fail, and fingerprints of tool arguments and errors. Not your prompts, not the model's replies, not your code. API keys are stored only as hashes. <a href="/privacy">Read the privacy page</a>.</p>
+    </div>
+    <div>
+      <h2>Free while in beta</h2>
+      <p class="muted">You keep paying your model provider directly with your own keys. {{ app_name }} never sees those keys. If paid plans come later, you'll hear about them well before anything changes.</p>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>{{ app_name }}</span>
+    <span><a href="/docs/quickstart">Quickstart</a> &nbsp; <a href="/privacy">Privacy</a></span>
+  </div>
+</footer>
+{% endblock %}

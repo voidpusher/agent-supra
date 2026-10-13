@@ -1,0 +1,32 @@
+# Local production-like setup: the app plus Postgres.
+#   cp .env.example .env    # then edit it
+#   docker compose up --build
+# Open http://localhost:8000
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: supervisor
+      POSTGRES_PASSWORD: supervisor
+      POSTGRES_DB: supervisor
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U supervisor"]
+      interval: 5s
+      retries: 10
+
+  app:
+    build: .
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql+psycopg://supervisor:supervisor@db:5432/supervisor
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  pgdata:

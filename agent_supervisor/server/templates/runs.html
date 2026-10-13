@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}Runs | {{ app_name }}{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Runs</h1>
+    <p class="muted" style="margin:4px 0 0">Every supervised agent run in {{ session.workspace_name }}, newest first.</p>
+  </div>
+</div>
+
+{% if paused_count %}
+<div class="attention" role="status">
+  <span><strong>{{ paused_count }} run{{ "s" if paused_count != 1 }} waiting for you.</strong>
+    The supervisor paused {{ "them" if paused_count != 1 else "it" }} and is holding further model calls.</span>
+  <a class="btn amber" href="/app?state=paused">Review paused runs</a>
+</div>
+{% endif %}
+
+<dl class="facts" aria-label="Last 7 days">
+  <div><dt>Runs, last 7 days</dt><dd>{{ stats.runs }}</dd></div>
+  <div><dt>Flagged or paused</dt><dd>{{ stats.flagged_runs }}</dd></div>
+  <div><dt>Completed</dt><dd>{{ stats.by_state.get("completed", 0) }}</dd></div>
+  <div><dt>Estimated model spend</dt><dd>{{ stats.spend_micros | usd2 }}</dd></div>
+</dl>
+
+<nav class="filters" aria-label="Filter by state">
+  {% for value, label in [("", "All"), ("paused", "Paused"), ("running", "Running"), ("completed", "Completed"), ("failed", "Failed"), ("stopped", "Stopped")] %}
+  <a href="/app{{ '?state=' ~ value if value }}" {% if state == value %}aria-current="true"{% endif %}>{{ label }}</a>
+  {% endfor %}
+</nav>
+
+<section class="panel" style="padding:8px 12px">
+  {% if runs %}
+  <div class="table-wrap">
+  <table class="runs">
+    <thead><tr><th>Task</th><th>State</th><th>Why</th><th class="num">Model calls</th><th class="num">Est. spend</th><th class="num">Started</th></tr></thead>
+    <tbody>
+    {% for r in runs %}
+      <tr>
+        <td><a href="/app/runs/{{ r.id }}">{{ r.objective }}</a>{% if r.parent_run_id %} <span class="muted small">(sub-agent)</span>{% endif %}</td>
+        <td><span class="state state-{{ r.state }}">{{ r.state | capitalize }}</span></td>
+        <td class="small">{{ (r.reason or "").split(":")[0] | rule_label if r.reason else "" }}</td>
+        <td class="num">{{ r.model_calls }}</td>
+        <td class="num">{{ r.spend_micros | usd2 }}{% if r.unpriced_calls %}<span class="muted" title="{{ r.unpriced_calls }} call(s) used a model with no known price">*</span>{% endif %}</td>
+        <td class="num muted small" title="{{ r.created_at | datetime }}">{{ r.created_at | ago }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  {% if more %}<p style="margin:12px 0 4px"><a href="/app?{{ 'state=' ~ state ~ '&' if state }}offset={{ next_offset }}">Show older runs</a></p>{% endif %}
+  {% elif state %}
+  <p class="empty">No {{ state }} runs.</p>
+  {% else %}
+  <div class="empty">
+    <p><strong>No runs yet.</strong></p>
+    <p>Create an API key, add a few lines to your agent, and its runs will show up here.</p>
+    <p><a class="btn" href="/app/keys">Create an API key</a> <a class="btn quiet" href="/docs/quickstart">Read the quickstart</a></p>
+  </div>
+  {% endif %}
+</section>
+{% endblock %}

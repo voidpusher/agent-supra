@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}API keys | {{ app_name }}{% endblock %}
+{% block content %}
+<div class="page-head"><div><h1>API keys</h1>
+<p class="muted" style="margin:4px 0 0">Your agents use a key to send events and ask whether they may continue.</p></div></div>
+
+{% if new_key %}
+<section class="panel" style="border-color:var(--amber)">
+  <h2>Copy your new key now</h2>
+  <p class="muted">This is the only time it's shown. Store it as an environment variable, not in your code.</p>
+  <p class="secret" id="new-key">{{ new_key }}</p>
+  <pre class="snippet">export AGENT_SUPERVISOR_API_KEY="{{ new_key }}"
+export AGENT_SUPERVISOR_URL="{{ base_url }}"</pre>
+</section>
+{% endif %}
+
+<section class="panel">
+  <h2>Create a key</h2>
+  <form method="post" action="/app/keys" class="actions" style="align-items:flex-end">
+    <input type="hidden" name="csrf" value="{{ session.csrf }}">
+    <div style="flex:1;min-width:220px"><label for="name">Name</label>
+      <input id="name" name="name" type="text" maxlength="200" required placeholder="e.g. bug-fixing agent on CI"></div>
+    <button class="btn" type="submit">Create key</button>
+  </form>
+</section>
+
+<section class="panel" style="padding:8px 12px">
+  {% if keys %}
+  <div class="table-wrap"><table>
+    <thead><tr><th>Name</th><th>Key</th><th class="num">Created</th><th class="num">Last used</th><th></th></tr></thead>
+    <tbody>
+    {% for k in keys %}
+      <tr>
+        <td>{{ k.name }}</td>
+        <td><code>{{ k.prefix }}_…</code></td>
+        <td class="num muted small">{{ k.created_at | ago }}</td>
+        <td class="num muted small">{{ k.last_used_at | ago if k.last_used_at else "Never" }}</td>
+        <td class="num">
+          {% if k.revoked_at %}<span class="muted small">Revoked</span>{% else %}
+          <form method="post" action="/app/keys/{{ k.id }}/revoke">
+            <input type="hidden" name="csrf" value="{{ session.csrf }}">
+            <button class="btn danger" type="submit" style="padding:4px 10px">Revoke</button>
+          </form>{% endif %}
+        </td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table></div>
+  {% else %}
+  <p class="empty">No keys yet. Create one above to connect your first agent.</p>
+  {% endif %}
+</section>
+{% endblock %}

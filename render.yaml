@@ -1,0 +1,40 @@
+# One-click deploy on Render: New > Blueprint > pick this repo.
+# Creates a Postgres database and the web service. After the first deploy,
+# set BASE_URL to the service's URL (or your custom domain) and redeploy.
+databases:
+  - name: supervisor-db
+    plan: 0.1c-256mb
+    databaseName: supervisor
+    user: supervisor
+
+services:
+  - type: web
+    name: agent-supervisor
+    runtime: docker
+    plan: 0.5c-512mb
+    healthCheckPath: /healthz
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: supervisor-db
+          property: connectionString
+      - key: BASE_URL
+        value: https://agent-supervisor.onrender.com
+      - key: APP_NAME
+        value: Agent Supervisor
+      - key: ALLOW_SIGNUP
+        value: "true"
+      - key: RETENTION_DAYS
+        value: "30"
+      - key: WEB_CONCURRENCY
+        value: "2"
+      - key: SENTRY_DSN
+        sync: false
+      - key: SMTP_HOST
+        sync: false
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASSWORD
+        sync: false
+      - key: SMTP_FROM
+        sync: false

@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}{{ title }} | {{ app_name }}{% endblock %}
+{% block body %}
+<div class="auth">
+  <p style="margin-bottom:28px"><a class="brand" href="/"><span class="brand-mark" aria-hidden="true"></span>{{ app_name }}</a></p>
+  <div class="panel"><h1>{{ title }}</h1><p class="muted" style="margin-top:10px">{{ message }}</p>
+  <p style="margin:0"><a href="/app">Go to your runs</a></p></div>
+</div>
+{% endblock %}
