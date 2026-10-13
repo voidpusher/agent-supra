@@ -4,7 +4,7 @@ Notice when an unattended AI agent is stuck, pause it before more money goes int
 
 A spend cap can't tell a stuck agent from one working hard on a tough bug. Agent Supra watches **progress**: if an agent keeps changing code while its failing tests don't get any fewer, the run is flagged (or paused, once you opt in) with the evidence.
 
-- **SDK** (`pip install agent-supra`): no dependencies. Wraps Gemini, OpenAI and Anthropic clients.
+- **SDK** (`pip install git+https://github.com/voidpusher/agent-supra.git` until the PyPI release): no dependencies. Wraps Gemini, OpenAI and Anthropic clients.
 - **Hosted service**: dashboard, API keys, alerts to Slack and email, Postgres-backed. One Docker image.
 
 ## Try it in two minutes (no accounts, no API keys)
@@ -49,7 +49,7 @@ with SupervisedRun(sup, task) as run:
     try:
         while True:
             run.check()                                   # raises SupervisorPaused when paused
-            reply = gemini.models.generate_content(model="gemini-2.5-flash", contents=prompt)
+            reply = gemini.models.generate_content(model="gemini-3.8-flash", contents=prompt)
             run.tool("edit_file", apply_fix, reply.text, rev=git_rev())
             result = run.tool("run_tests", run_tests, rev=git_rev())
             run.report_tests(result.all_ids, result.failing_ids, rev=git_rev())

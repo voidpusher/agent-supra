@@ -216,6 +216,50 @@ def test_test_alert(account):
     assert len(server.alerts) == 1
 
 
+def test_test_alert_reports_delivery_failure(account):
+    server, _ = account
+    page = server.get("/app/settings")
+    server.post("/app/settings", data={"csrf": csrf_from(page.text), "threshold": "4",
+                                       "slack_webhook": "https://hooks.slack.com/services/T/B/x"})
+
+    def fail_delivery(_ws, _item):
+        raise OSError("webhook unreachable")
+
+    server.ctx.alerter._send = fail_delivery
+    response = server.post("/app/settings/test-alert", data={"csrf": csrf_from(page.text)})
+    assert response.status_code == 502
+    assert "Test alert delivery failed" in response.text
+
+
+def test_settings_reject_nonfinite_model_prices(account):
+    server, _ = account
+    page = server.get("/app/settings")
+    for value in ("nan", "inf", "-inf"):
+        response = server.post("/app/settings", data={"csrf": csrf_from(page.text),
+                                                      "threshold": "4", "prices": f"my-model {value} 1"})
+        assert response.status_code == 400
+
+
+def test_slack_webhook_rejects_unsafe_urls_and_redirects():
+    import urllib.error
+    import urllib.request
+
+    import pytest
+
+    from agent_supra.server.alerts import _NoRedirect, valid_slack_webhook
+
+    assert valid_slack_webhook("https://hooks.slack.com/services/T/B/x")
+    for url in ("https://hooks.slack.com.evil.example/services/T/B/x",
+                "https://hooks.slack.com@evil.example/services/T/B/x",
+                "https://hooks.slack.com/services/T/B/x?redirect=https://evil.example",
+                "https://hooks.slack.com:444/services/T/B/x",
+                "https://hooks.slack.com.evil.example/"):
+        assert not valid_slack_webhook(url)
+    request = urllib.request.Request("https://hooks.slack.com/services/T/B/x")
+    with pytest.raises(urllib.error.HTTPError):
+        _NoRedirect().redirect_request(request, None, 302, "Found", {}, "http://127.0.0.1/")
+
+
 def test_flags_alert_only_when_enabled(account):
     server, key = account
     stuck_run(server, key, policy={"observation_mode": True})

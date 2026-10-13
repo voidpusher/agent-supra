@@ -8,7 +8,10 @@ from __future__ import annotations
 
 import json
 import logging
+import re
 import smtplib
+import urllib.error
+import urllib.parse
 import urllib.request
 from concurrent.futures import ThreadPoolExecutor
 from email.message import EmailMessage
@@ -18,13 +21,25 @@ from .accounts import Accounts
 from .settings import Settings
 
 log = logging.getLogger("agent_supra.alerts")
-SLACK_PREFIX = "https://hooks.slack.com/"
+_SLACK_PATH = re.compile(r"/services/[A-Za-z0-9]+/[A-Za-z0-9]+/[A-Za-z0-9_-]+\Z")
 
 
 def valid_slack_webhook(url: str | None) -> bool:
-    # Only Slack's own host: stops the setting being used to make the server
-    # call arbitrary internal URLs.
-    return not url or url.startswith(SLACK_PREFIX)
+    if not url:
+        return True
+    try:
+        parts = urllib.parse.urlsplit(url)
+        return (parts.scheme == "https" and parts.hostname == "hooks.slack.com"
+                and parts.port is None and not parts.username and not parts.password
+                and not parts.query and not parts.fragment
+                and bool(_SLACK_PATH.fullmatch(parts.path)))
+    except ValueError:
+        return False
+
+
+class _NoRedirect(urllib.request.HTTPRedirectHandler):
+    def redirect_request(self, request, fp, code, msg, headers, newurl):
+        raise urllib.error.HTTPError(request.full_url, code, "Slack webhook redirected", headers, fp)
 
 
 def compose(item: dict, settings: Settings) -> tuple[str, str]:
@@ -52,6 +67,11 @@ class Alerter:
         else:
             self._pool.submit(self._safe, item)
 
+    def send_test(self, item: dict) -> None:
+        """Deliver a dashboard test synchronously so errors can be reported."""
+        ws = self.accounts.workspace(item["workspace_id"])
+        self._send(ws, item)
+
     def _safe(self, item: dict) -> None:
         try:
             ws = self.accounts.workspace(item["workspace_id"])
@@ -76,9 +96,11 @@ class Alerter:
 
 
 def send_slack(webhook: str, text: str) -> None:
+    if not valid_slack_webhook(webhook):
+        raise ValueError("invalid Slack webhook URL")
     request = urllib.request.Request(webhook, data=json.dumps({"text": text}).encode(),
                                      headers={"Content-Type": "application/json"}, method="POST")
-    with urllib.request.urlopen(request, timeout=5) as response:  # noqa: S310 (host validated)
+    with urllib.request.build_opener(_NoRedirect).open(request, timeout=5) as response:
         response.read()
 
 

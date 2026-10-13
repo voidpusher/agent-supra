@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import logging
+import math
 import secrets
 import time
 from datetime import datetime, timezone
@@ -28,7 +30,7 @@ NOTICES = {
     "stopped": ("success", "Run stopped."),
     "revoked": ("success", "Key revoked. Agents using it will get a 401 on their next request."),
     "password": ("success", "Password changed. Other sessions were logged out."),
-    "alert-sent": ("success", "Test alert queued. Check Slack and your inbox."),
+    "alert-sent": ("success", "Test alert delivered. Check Slack and your inbox."),
     "alert-none": ("error", "Add a Slack webhook or alert email first, then save."),
 }
 
@@ -336,14 +338,14 @@ def build_router(state) -> APIRouter:
                 continue
             try:
                 model, inp, out = parts[0], float(parts[1]), float(parts[2])
-                if len(parts) != 3 or inp < 0 or out < 0:
+                if len(parts) != 3 or not all(math.isfinite(v) and v >= 0 for v in (inp, out)):
                     raise ValueError
             except (ValueError, IndexError):
                 return settings_page(request, session, f"Price line {number} should look like: my-model 1.25 10", 400)
             prices[pricing.normalize(model)] = [inp, out]
         slack = str(form.get("slack_webhook", "")).strip() or None
         if not valid_slack_webhook(slack):
-            return settings_page(request, session, "The Slack webhook must start with https://hooks.slack.com/.", 400)
+            return settings_page(request, session, "Enter a Slack incoming webhook URL under https://hooks.slack.com/services/.", 400)
         email = str(form.get("alert_email", "")).strip() or None
         if email and ("@" not in email or len(email) > 320):
             return settings_page(request, session, "Enter a valid alert email, or leave it empty.", 400)
@@ -363,10 +365,16 @@ def build_router(state) -> APIRouter:
         ws = accounts.workspace(session.workspace_id)
         if not ws.get("slack_webhook") and not ws.get("alert_email"):
             return RedirectResponse("/app/settings?notice=alert-none", status_code=303)
+        if ws.get("alert_email") and not settings.smtp_host:
+            return settings_page(request, session, "Email alerts need SMTP settings on the server.", 400)
         sample = {"run_id": "run_example", "rule": "no_progress", "action": "pause", "actor": "supervisor",
                   "message": "Test alert: the same 2 tests failed on 4 attempts across 4 code versions.",
                   "spend_micros": 140_000, "objective": "Example task", "workspace_id": session.workspace_id}
-        state.alerter(sample)
+        try:
+            state.alerter.send_test(sample)
+        except Exception:
+            logging.getLogger("agent_supra.alerts").exception("test alert delivery failed")
+            return settings_page(request, session, "Test alert delivery failed. Check the server logs and alert settings.", 502)
         return RedirectResponse("/app/settings?notice=alert-sent", status_code=303)
 
     @router.post("/app/settings/password", response_class=HTMLResponse)

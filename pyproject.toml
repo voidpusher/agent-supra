@@ -8,12 +8,11 @@ version = "1.0.0"
 description = "Notice when an unattended AI agent is stuck, pause it, and show why."
 readme = "README.md"
 requires-python = ">=3.10"
-license = { text = "MIT" }
+license = "MIT"
 authors = [{ name = "Sanchit" }]
 keywords = ["ai agents", "llm", "gemini", "monitoring", "cost control", "observability"]
 classifiers = [
   "Programming Language :: Python :: 3",
-  "License :: OSI Approved :: MIT License",
   "Operating System :: OS Independent",
   "Topic :: Software Development :: Testing",
 ]

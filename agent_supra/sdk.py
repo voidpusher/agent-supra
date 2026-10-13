@@ -9,7 +9,7 @@
         try:
             while True:
                 run.check()                          # raises SupervisorPaused when paused
-                reply = gemini.models.generate_content(model="gemini-2.5-flash", contents=prompt)
+                reply = gemini.models.generate_content(model="gemini-3.8-flash", contents=prompt)
                 run.tool("edit_file", apply_fix, reply.text, rev=git_rev())
                 result = run.tool("run_tests", run_tests, rev=git_rev())
                 run.report_tests(result.all_ids, result.failing_ids, rev=git_rev())

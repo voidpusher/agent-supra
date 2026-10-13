@@ -1,8 +1,35 @@
 # Deploying
 
-The service is one Docker image plus a Postgres database. Any host that runs containers works. Render is the quickest.
+The current hosted beta runs on Vercel with Neon Postgres at
+`https://agent-supra.vercel.app`. The repository also supports a Docker host.
 
-## Render (recommended for launch)
+## Vercel and Neon (current production setup)
+
+1. Connect this GitHub repository to a Vercel project. `vercel.json` selects the
+   FastAPI entrypoint, runs it in Singapore near the Neon database, and schedules
+   a daily retention cron.
+2. Create a Neon Postgres database in Singapore and set its pooled connection URL
+   as the Vercel production `DATABASE_URL` secret. Do not commit it or put it in a
+   deployment URL.
+3. Set `BASE_URL=https://agent-supra.vercel.app` (or the verified custom domain),
+   `CONTACT_EMAIL`, and a random `CRON_SECRET` in Vercel's production environment.
+   The cron is rejected with 401 unless the request carries Vercel's secret.
+4. Deploy from `main`. Check `/healthz` returns `{"ok":true,...}`, then verify an
+   authenticated dashboard session and an API-key run end to end. Check the
+   production function logs for errors.
+5. Configure Neon backups and test a restore before accepting real customer data.
+   Set `SENTRY_DSN` for error alerts, and `SMTP_*` or a workspace Slack webhook
+   for intervention alerts. Use the Settings test alert and confirm it arrives.
+
+The SDK is currently installed from the public GitHub repository; publish it to
+PyPI and change the site's install command only after a fresh install succeeds.
+
+## Docker host (alternative)
+
+The service is one Docker image plus a Postgres database. Any host that runs
+containers works.
+
+## Render
 
 1. Push this repo to GitHub.
 2. In Render: **New**, then **Blueprint**, then pick the repo. Render reads `render.yaml` and creates:

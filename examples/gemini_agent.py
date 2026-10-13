@@ -54,7 +54,7 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--impossible", action="store_true", help="add a test that can never pass")
     parser.add_argument("--pause", action="store_true", help="pause on loops even if the workspace is in observation mode")
-    parser.add_argument("--model", default=os.environ.get("GEMINI_MODEL", "gemini-2.5-flash"))
+    parser.add_argument("--model", default=os.environ.get("GEMINI_MODEL", "gemini-3.8-flash"))
     parser.add_argument("--max-steps", type=int, default=10)
     parser.add_argument("--budget", type=float, default=0.50, help="task budget in USD")
     parser.add_argument("--fail-mode", choices=("open", "closed"), default="open",

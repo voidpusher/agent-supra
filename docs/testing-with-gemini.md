@@ -15,7 +15,10 @@ export AGENT_SUPRA_API_KEY=as_live_...
 export AGENT_SUPRA_URL=http://localhost:8000     # or your deployment
 ```
 
-Each run of the example costs well under $0.05 on `gemini-2.5-flash`.
+The example defaults to `gemini-3.8-flash`. Use `--model` or `GEMINI_MODEL` to
+select another available model. Costs depend on token usage and your Google tier;
+the dashboard uses estimated Standard-tier prices even when your calls are free.
+Check https://ai.google.dev/gemini-api/docs/pricing before running paid tests.
 
 ## Test 1: a solvable bug is left alone
 
