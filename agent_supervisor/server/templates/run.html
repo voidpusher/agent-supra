@@ -2,13 +2,13 @@
 {% block title %}{{ task.objective }} | {{ app_name }}{% endblock %}
 {% block head %}{% if run.state == "running" %}<script src="/static/refresh.js" defer></script>{% endif %}{% endblock %}
 {% block content %}
-<p class="small" style="margin-bottom:8px"><a href="/app">All runs</a></p>
+<p class="back"><a href="/app">All runs</a></p>
 <div class="page-head">
   <div>
     <h1>{{ task.objective }}</h1>
-    <p class="muted" style="margin:6px 0 0">Run <code>{{ run.id }}</code>, attempt {{ run.attempt }}{% if run.parent_run_id %}, sub-agent of <a href="/app/runs/{{ run.parent_run_id }}"><code>{{ run.parent_run_id }}</code></a>{% endif %}. Started {{ run.created_at | datetime }}.</p>
+    <p class="sub small">Run <code>{{ run.id }}</code>, attempt {{ run.attempt }}{% if run.parent_run_id %}, sub-agent of <a href="/app/runs/{{ run.parent_run_id }}"><code>{{ run.parent_run_id }}</code></a>{% endif %}. Started {{ run.created_at | datetime }}.</p>
   </div>
-  <span class="state state-{{ run.state }}" style="font-size:0.95rem">{{ run.state | capitalize }}</span>
+  <span class="state lg state-{{ run.state }}">{{ run.state | capitalize }}</span>
 </div>
 
 <div class="two-col">
@@ -17,31 +17,31 @@
       {% if i.actor == "supervisor" %}
       <section class="finding {{ 'flag' if i.action != 'pause' }}">
         <h3>{{ "Paused" if i.action == "pause" else "Flagged" }}: {{ i.rule | rule_label }}</h3>
-        <p style="margin:0">{{ i.message }}{% if i.spend_micros is not none %} Estimated task spend at that point: {{ i.spend_micros | usd2 }}.{% endif %}</p>
-        {% if i.action != "pause" %}<p class="small muted" style="margin:6px 0 0">Observation only: the run was not paused. Turn on pausing for this rule in Settings once you trust it.</p>{% endif %}
-        {% if i.confidence != "high" %}<p class="small muted" style="margin:6px 0 0">Low confidence: some events from this run never arrived, so it was flagged instead of paused.</p>{% endif %}
-        {% if i.evidence %}<p class="small muted" style="margin:6px 0 0">The {{ i.evidence | length }} steps behind this are highlighted below.</p>{% endif %}
+        <p class="flush">{{ i.message }}{% if i.spend_micros is not none %} Estimated task spend at that point: {{ i.spend_micros | usd2 }}.{% endif %}</p>
+        {% if i.action != "pause" %}<p class="small muted note">Observation only: the run was not paused. Turn on pausing for this rule in Settings once you trust it.</p>{% endif %}
+        {% if i.confidence != "high" %}<p class="small muted note">Low confidence: some events from this run never arrived, so it was flagged instead of paused.</p>{% endif %}
+        {% if i.evidence %}<p class="small muted note">The {{ i.evidence | length }} steps behind this are highlighted below.</p>{% endif %}
       </section>
       {% else %}
       <section class="finding human">
         <h3>{{ {"pause": "Paused", "continue": "Continued", "stop": "Stopped"}.get(i.action, i.action) }} by {{ i.actor }}</h3>
-        <p style="margin:0">{{ i.message }}</p>
-        <p class="small muted" style="margin:4px 0 0">{{ i.created_at | datetime }}</p>
+        <p class="flush">{{ i.message }}</p>
+        <p class="small muted note">{{ i.created_at | datetime }}</p>
       </section>
       {% endif %}
     {% endfor %}
 
-    <section class="panel" style="padding:8px 12px">
+    <section class="panel list">
       <div class="table-wrap">
       <table>
-        <thead><tr><th class="num">Step</th><th>What happened</th><th class="num">Est. cost</th><th class="num">Running total</th></tr></thead>
+        <thead><tr><th class="num">Step</th><th>What happened</th><th class="num">Est. cost</th><th class="num hide-sm">Running total</th></tr></thead>
         <tbody>
         {% for e in events %}
           <tr class="{{ 'hit' if e.event_id in evidence }}">
             <td class="num muted">{{ e.seq }}</td>
             <td>{{ e | describe }}</td>
             <td class="num">{{ e.cost }}</td>
-            <td class="num muted">{{ e.running }}</td>
+            <td class="num muted hide-sm">{{ e.running }}</td>
           </tr>
         {% else %}
           <tr><td colspan="4" class="empty">No events yet.</td></tr>
@@ -55,11 +55,11 @@
   <aside>
     <section class="panel">
       <h2>Spend</h2>
-      <dl class="facts" style="margin:0;gap:20px">
+      <dl class="facts">
         <div><dt>This run</dt><dd>{{ run.spend_micros | usd2 }}</dd></div>
         <div><dt>Whole task</dt><dd>{{ task_spend.estimated_micros | usd2 }}</dd></div>
       </dl>
-      <p class="small muted" style="margin:12px 0 0">
+      <p class="small muted note-lg">
         {% if task.budget_micros is not none %}Task budget {{ task.budget_micros | usd2 }}.{% else %}No budget set for this task.{% endif %}
         {% if task.max_calls %} Call cap {{ task.max_calls }}.{% endif %}
         {{ task_spend.calls }} model call{{ "s" if task_spend.calls != 1 }} so far.
@@ -90,7 +90,7 @@
     <section class="panel">
       <h2>{{ "Stop" if run.state == "paused" else "Pause or stop" }}</h2>
       {% if run.state == "running" %}
-      <form method="post" action="/app/runs/{{ run.id }}/pause" style="margin-bottom:14px">
+      <form method="post" action="/app/runs/{{ run.id }}/pause" class="gap-after">
         <input type="hidden" name="csrf" value="{{ session.csrf }}">
         <div class="field"><label for="pause-reason">Reason</label>
           <input id="pause-reason" name="reason" type="text" maxlength="1000" placeholder="Optional"></div>

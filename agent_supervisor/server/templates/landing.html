@@ -51,7 +51,7 @@
     <div>
       <h2>What it watches for</h2>
       <p class="intro">Plain rules you can read, not a second AI guessing. Each one can pause, only flag, or be switched off.</p>
-      <div class="rules" style="grid-template-columns:1fr">
+      <div class="panel rules">
         <div><h3>No progress</h3><p>The same tests keep failing while the agent keeps changing the code.</p></div>
         <div><h3>Exact repeats</h3><p>The same failure again with nothing changed, or the same tool failing the same way.</p></div>
         <div><h3>Going in circles</h3><p>The agent flips between two versions of the code.</p></div>
@@ -62,41 +62,42 @@
     <div>
       <h2>Add it to a Gemini agent</h2>
       <p class="intro">Anthropic and OpenAI clients work the same way.</p>
-<pre class="snippet">from google import genai
+<div class="panel"><pre class="snippet">from google import genai
 from agent_supervisor import (
     Client, SupervisedRun, SupervisorPaused)
 
-sup = Client()  # reads AGENT_SUPERVISOR_API_KEY
+sup = Client()   # reads your API key from env
 task = sup.create_task("Fix checkout tests",
                        budget_usd=3)
 
 with SupervisedRun(sup, task) as run:
-    gemini = run.wrap_gemini(genai.Client())
+    ai = run.wrap_gemini(genai.Client())
     try:
         while True:
             run.check()
-            reply = gemini.models.generate_content(
-                model="gemini-2.5-flash", contents=prompt)
+            reply = ai.models.generate_content(
+                model="gemini-2.5-flash",
+                contents=prompt)
             apply_fix(reply.text)
-            result = run_tests()
-            run.report_tests(result.all, result.failing,
+            t = run_tests()
+            run.report_tests(t.all, t.failing,
                              rev=git_rev())
-            if not result.failing:
+            if not t.failing:
                 run.finish("success")
                 break
     except SupervisorPaused as paused:
-        print(paused.reason)</pre>
+        print(paused.reason)</pre></div>
     </div>
   </section>
 
   <section class="band split">
-    <div>
+    <div class="panel">
       <h2>What it stores</h2>
-      <p class="muted">Token counts, test names, pass or fail, and fingerprints of tool arguments and errors. Not your prompts, not the model's replies, not your code. API keys are stored only as hashes. <a href="/privacy">Read the privacy page</a>.</p>
+      <p class="muted flush">Token counts, test names, pass or fail, and fingerprints of tool arguments and errors. Not your prompts, not the model's replies, not your code. API keys are stored only as hashes. <a href="/privacy">Read the privacy page</a>.</p>
     </div>
-    <div>
+    <div class="panel">
       <h2>Free while in beta</h2>
-      <p class="muted">You keep paying your model provider directly with your own keys. {{ app_name }} never sees those keys. If paid plans come later, you'll hear about them well before anything changes.</p>
+      <p class="muted flush">You keep paying your model provider directly with your own keys. {{ app_name }} never sees those keys. If paid plans come later, you'll hear about them well before anything changes.</p>
     </div>
   </section>
 </main>

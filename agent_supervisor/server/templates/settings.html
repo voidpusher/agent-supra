@@ -2,7 +2,7 @@
 {% block title %}Settings | {{ app_name }}{% endblock %}
 {% block content %}
 <div class="page-head"><div><h1>Settings</h1>
-<p class="muted" style="margin:4px 0 0">Defaults for every task in {{ ws.name }}. A task can override them when it's created.</p></div></div>
+<p class="sub">Defaults for every task in {{ ws.name }}. A task can override them when it's created.</p></div></div>
 
 <form method="post" action="/app/settings">
 <input type="hidden" name="csrf" value="{{ session.csrf }}">
@@ -11,7 +11,7 @@
   <h2>Loop detection</h2>
   <div class="field">
     <label class="check"><input type="checkbox" name="observation_mode" value="1" {% if policy.observation_mode %}checked{% endif %}>
-      <span>Observation mode<span class="hint" style="display:block">Rules only flag runs; nothing is paused. Leave this on until you've checked a week of flags. Budgets and call caps are enforced either way.</span></span></label>
+      <span>Observation mode<span class="hint block">Rules only flag runs; nothing is paused. Leave this on until you've checked a week of flags. Budgets and call caps are enforced either way.</span></span></label>
   </div>
   <div class="grid2">
     <div class="field"><label for="threshold">Attempts before a flag</label>
@@ -22,7 +22,7 @@
       <p class="hint">Flag any single model call with a bigger input than this.</p></div>
   </div>
   <div class="table-wrap"><table>
-    <thead><tr><th>Rule</th><th>What it catches</th><th style="width:170px">When it fires</th></tr></thead>
+    <thead><tr><th>Rule</th><th>What it catches</th><th class="w-select">When it fires</th></tr></thead>
     <tbody>
     {% for rule, text in rules %}
       <tr><td><strong>{{ rule | rule_label }}</strong></td><td class="small muted">{{ text }}</td>
@@ -56,7 +56,7 @@
 </section>
 
 <section class="panel">
-  <div class="field" style="max-width:420px"><label for="ws-name">Workspace name</label>
+  <div class="field narrow"><label for="ws-name">Workspace name</label>
     <input id="ws-name" name="name" type="text" maxlength="200" value="{{ ws.name }}" required></div>
   <div class="actions"><button class="btn" type="submit">Save settings</button></div>
 </section>
@@ -73,7 +73,7 @@
 
 <section class="panel">
   <h2>Change password</h2>
-  <form method="post" action="/app/settings/password" class="grid2" style="align-items:end">
+  <form method="post" action="/app/settings/password" class="grid2 align-end">
     <input type="hidden" name="csrf" value="{{ session.csrf }}">
     <div class="field"><label for="cur">Current password</label><input id="cur" name="current" type="password" autocomplete="current-password" required></div>
     <div class="field"><label for="new">New password</label><input id="new" name="new" type="password" minlength="10" autocomplete="new-password" required></div>
@@ -81,12 +81,12 @@
   </form>
 </section>
 
-<section class="panel" style="border-color:var(--red)">
+<section class="panel danger-zone">
   <h2>Delete account</h2>
   <p class="muted small">Deletes this workspace, every run, event and API key, and your login. This can't be undone.</p>
-  <form method="post" action="/app/settings/delete" class="actions" style="align-items:flex-end">
+  <form method="post" action="/app/settings/delete" class="actions inline-form">
     <input type="hidden" name="csrf" value="{{ session.csrf }}">
-    <div style="flex:1;min-width:220px"><label for="confirm">Type <strong>{{ ws.name }}</strong> to confirm</label>
+    <div class="grow"><label for="confirm">Type <strong>{{ ws.name }}</strong> to confirm</label>
       <input id="confirm" name="confirm" type="text" required autocomplete="off"></div>
     <button class="btn danger" type="submit">Delete everything</button>
   </form>

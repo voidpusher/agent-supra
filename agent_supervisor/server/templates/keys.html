@@ -2,10 +2,10 @@
 {% block title %}API keys | {{ app_name }}{% endblock %}
 {% block content %}
 <div class="page-head"><div><h1>API keys</h1>
-<p class="muted" style="margin:4px 0 0">Your agents use a key to send events and ask whether they may continue.</p></div></div>
+<p class="sub">Your agents use a key to send events and ask whether they may continue.</p></div></div>
 
 {% if new_key %}
-<section class="panel" style="border-color:var(--amber)">
+<section class="panel warn">
   <h2>Copy your new key now</h2>
   <p class="muted">This is the only time it's shown. Store it as an environment variable, not in your code.</p>
   <p class="secret" id="new-key">{{ new_key }}</p>
@@ -16,15 +16,15 @@ export AGENT_SUPERVISOR_URL="{{ base_url }}"</pre>
 
 <section class="panel">
   <h2>Create a key</h2>
-  <form method="post" action="/app/keys" class="actions" style="align-items:flex-end">
+  <form method="post" action="/app/keys" class="actions inline-form">
     <input type="hidden" name="csrf" value="{{ session.csrf }}">
-    <div style="flex:1;min-width:220px"><label for="name">Name</label>
+    <div class="grow"><label for="name">Name</label>
       <input id="name" name="name" type="text" maxlength="200" required placeholder="e.g. bug-fixing agent on CI"></div>
     <button class="btn" type="submit">Create key</button>
   </form>
 </section>
 
-<section class="panel" style="padding:8px 12px">
+<section class="panel list">
   {% if keys %}
   <div class="table-wrap"><table>
     <thead><tr><th>Name</th><th>Key</th><th class="num">Created</th><th class="num">Last used</th><th></th></tr></thead>
@@ -39,7 +39,7 @@ export AGENT_SUPERVISOR_URL="{{ base_url }}"</pre>
           {% if k.revoked_at %}<span class="muted small">Revoked</span>{% else %}
           <form method="post" action="/app/keys/{{ k.id }}/revoke">
             <input type="hidden" name="csrf" value="{{ session.csrf }}">
-            <button class="btn danger" type="submit" style="padding:4px 10px">Revoke</button>
+            <button class="btn danger sm" type="submit">Revoke</button>
           </form>{% endif %}
         </td>
       </tr>

@@ -4,7 +4,7 @@
 <div class="page-head">
   <div>
     <h1>Runs</h1>
-    <p class="muted" style="margin:4px 0 0">Every supervised agent run in {{ session.workspace_name }}, newest first.</p>
+    <p class="sub">Every supervised agent run in {{ session.workspace_name }}, newest first.</p>
   </div>
 </div>
 
@@ -29,18 +29,18 @@
   {% endfor %}
 </nav>
 
-<section class="panel" style="padding:8px 12px">
+<section class="panel list">
   {% if runs %}
   <div class="table-wrap">
   <table class="runs">
-    <thead><tr><th>Task</th><th>State</th><th>Why</th><th class="num">Model calls</th><th class="num">Est. spend</th><th class="num">Started</th></tr></thead>
+    <thead><tr><th>Task</th><th>State</th><th class="hide-sm">Why</th><th class="num hide-sm">Model calls</th><th class="num">Est. spend</th><th class="num">Started</th></tr></thead>
     <tbody>
     {% for r in runs %}
       <tr>
         <td><a href="/app/runs/{{ r.id }}">{{ r.objective }}</a>{% if r.parent_run_id %} <span class="muted small">(sub-agent)</span>{% endif %}</td>
         <td><span class="state state-{{ r.state }}">{{ r.state | capitalize }}</span></td>
-        <td class="small">{{ (r.reason or "").split(":")[0] | rule_label if r.reason else "" }}</td>
-        <td class="num">{{ r.model_calls }}</td>
+        <td class="small hide-sm">{{ (r.reason or "").split(":")[0] | rule_label if r.reason else "" }}</td>
+        <td class="num hide-sm">{{ r.model_calls }}</td>
         <td class="num">{{ r.spend_micros | usd2 }}{% if r.unpriced_calls %}<span class="muted" title="{{ r.unpriced_calls }} call(s) used a model with no known price">*</span>{% endif %}</td>
         <td class="num muted small" title="{{ r.created_at | datetime }}">{{ r.created_at | ago }}</td>
       </tr>
@@ -48,7 +48,7 @@
     </tbody>
   </table>
   </div>
-  {% if more %}<p style="margin:12px 0 4px"><a href="/app?{{ 'state=' ~ state ~ '&' if state }}offset={{ next_offset }}">Show older runs</a></p>{% endif %}
+  {% if more %}<p class="more"><a href="/app?{{ 'state=' ~ state ~ '&' if state }}offset={{ next_offset }}">Show older runs</a></p>{% endif %}
   {% elif state %}
   <p class="empty">No {{ state }} runs.</p>
   {% else %}

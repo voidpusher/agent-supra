@@ -2,7 +2,7 @@
 {% block title %}{{ heading }} | {{ app_name }}{% endblock %}
 {% block body %}
 <div class="auth">
-  <p style="margin-bottom:28px"><a class="brand" href="/"><span class="brand-mark" aria-hidden="true"></span>{{ app_name }}</a></p>
+  <p class="brand-row"><a class="brand" href="/"><span class="brand-mark" aria-hidden="true"></span>{{ app_name }}</a></p>
   <div class="panel">
     <h1>{{ heading }}</h1>
     {% if error %}<div class="notice error" role="alert">{{ error }}</div>{% endif %}
@@ -14,10 +14,10 @@
         <input id="password" name="password" type="password" required
           {% if mode == "signup" %}minlength="10" autocomplete="new-password"{% else %}autocomplete="current-password"{% endif %}>
         {% if mode == "signup" %}<p class="hint">At least 10 characters.</p>{% endif %}</div>
-      <button class="btn" type="submit" style="width:100%;justify-content:center">{{ button }}</button>
+      <button class="btn" type="submit">{{ button }}</button>
     </form>
   </div>
-  <p class="muted small" style="text-align:center">
+  <p class="muted small center">
     {% if mode == "signup" %}Already have an account? <a href="/login">Log in</a>
     {% else %}{% if allow_signup %}New here? <a href="/signup">Create an account</a>{% endif %}{% endif %}
   </p>
