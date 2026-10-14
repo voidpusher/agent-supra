@@ -27,7 +27,7 @@
     </div>
 
     <figure class="trace" aria-label="Example: an agent's attempts while fixing a failing test">
-      <div class="trace-head"><span>Task: fix apply_discount</span><span class="model">gemini-3.8-flash</span></div>
+      <div class="trace-head"><span>Task: fix apply_discount</span><span class="model">gemini-3.5-flash-lite</span></div>
       <div class="trace-row"><span class="n">1</span><span class="hash">951b120</span><span class="fail">ten_percent, full_discount</span><span class="cost">$0.006</span></div>
       <div class="trace-row same"><span class="n">2</span><span class="hash">861b417</span><span class="fail">ten_percent, full_discount</span><span class="cost">$0.008</span></div>
       <div class="trace-row same"><span class="n">3</span><span class="hash">377736e</span><span class="fail">ten_percent, full_discount</span><span class="cost">$0.011</span></div>
@@ -76,7 +76,7 @@ with SupervisedRun(sup, task) as run:
         while True:
             run.check()
             reply = ai.models.generate_content(
-                model="gemini-3.8-flash",
+                model="gemini-3.5-flash-lite",
                 contents=prompt)
             apply_fix(reply.text)
             t = run_tests()

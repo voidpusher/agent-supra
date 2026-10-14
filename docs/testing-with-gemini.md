@@ -15,7 +15,7 @@ export AGENT_SUPRA_API_KEY=as_live_...
 export AGENT_SUPRA_URL=http://localhost:8000     # or your deployment
 ```
 
-The example defaults to `gemini-3.8-flash`. Use `--model` or `GEMINI_MODEL` to
+The example defaults to `gemini-3.5-flash-lite`. Use `--model` or `GEMINI_MODEL` to
 select another available model. Costs depend on token usage and your Google tier;
 the dashboard uses estimated Standard-tier prices even when your calls are free.
 Check https://ai.google.dev/gemini-api/docs/pricing before running paid tests.
@@ -85,6 +85,26 @@ Wrap one of your own Gemini scripts the way the example does. The things to chec
 - Every model call appears on the run (count them against your own logs).
 - Spend roughly matches Google AI Studio's usage page for the same period. It won't match exactly; it's an estimate.
 - If you use `client.chats`, `generate_content_stream` or `client.aio`, those calls show up too.
+
+## Test 9: live SDK wrapper check
+
+From the repository after `pip install -e ".[dev]"`, set `GEMINI_API_KEY` in
+your environment or the ignored project `.env`, then run:
+
+```bash
+python scripts/live_gemini_wrappers.py
+```
+
+The script makes six small Gemini calls through the SDK: sync model, sync
+stream, chat, chat stream, async model, and async stream. It verifies that each
+call produces exactly one model event with input tokens, then pauses the local
+run and checks that a new call is refused before reaching Gemini. It uses an
+in-memory supervisor, so no hosted API key is needed. It prints only model
+names, usage counts, and pass/fail status. These are real provider calls and
+may incur a small charge. Set `GEMINI_MODEL` to test a different model.
+
+On Windows PowerShell, use `$env:GEMINI_MODEL="gemini-3.5-flash-lite"` to set
+the optional model override before running the script.
 
 ## What to send back
 

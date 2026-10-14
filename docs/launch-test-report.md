@@ -1,4 +1,4 @@
-# Launch verification — 13 October 2026
+# Launch verification — 13–14 October 2026
 
 Status: **the hosted beta works end to end, but public launch is not complete**.
 
@@ -25,6 +25,10 @@ Status: **the hosted beta works end to end, but public launch is not complete**.
   The source distribution and wheel passed `twine check`. A fresh virtual
   environment installed the SDK from the public GitHub repository and ran its
   command successfully. GitHub Actions for commit `12cc79a` passed.
+- On 14 October, a live Gemini 3.5 Flash-Lite check verified sync model,
+  sync stream, chat, chat stream, async model, and async stream. Each path
+  recorded one call with input tokens; a paused run blocked the next call
+  locally. The repeatable check is `scripts/live_gemini_wrappers.py`.
 
 ## External failures and open launch work
 
@@ -43,8 +47,9 @@ Status: **the hosted beta works end to end, but public launch is not complete**.
 - Terms are still labeled a private-beta draft. A domain, final terms review,
   demo video, and the planned beta feedback week remain outside this technical
   verification.
-- Real Gemini chat, streaming, and async wrappers have automated test-double
-  coverage, but not live-provider verification.
+- The first live wrapper-check attempt with Gemini 3.1 Flash-Lite returned a
+  Google 503 before any call completed. OpenAI and Anthropic still need
+  live-provider verification with their own credentials.
 
 No credentials are included here. Detailed local logs and screenshots are in
 ignored `.local` files.
