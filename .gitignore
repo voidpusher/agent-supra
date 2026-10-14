@@ -6,6 +6,8 @@ dist/
 .venv/
 venv/
 .env
+.env.local
+.env.*.local
 *.db
 *.db-wal
 *.db-shm
