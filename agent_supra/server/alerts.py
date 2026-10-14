@@ -83,10 +83,20 @@ class Alerter:
 
     def _deliver(self, ws: dict, item: dict) -> None:
         subject, body = compose(item, self.settings)
+        failures = []
         if ws.get("slack_webhook") and valid_slack_webhook(ws["slack_webhook"]):
-            send_slack(ws["slack_webhook"], f"*{subject}*\n{body}")
+            try:
+                send_slack(ws["slack_webhook"], f"*{subject}*\n{body}")
+            except Exception:
+                failures.append("Slack")
         if ws.get("alert_email") and self.settings.smtp_host:
-            send_email(self.settings, ws["alert_email"], subject, body)
+            try:
+                send_email(self.settings, ws["alert_email"], subject, body)
+            except Exception:
+                failures.append("email")
+        if failures:
+            # Do not include webhook URLs or SMTP credentials in logs or UI errors.
+            raise RuntimeError(f"Alert delivery failed for {', '.join(failures)}")
 
     def flush(self, timeout: float = 5.0) -> None:
         """Wait for queued alerts (used by tests and shutdown)."""

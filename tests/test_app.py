@@ -216,6 +216,18 @@ def test_test_alert(account):
     assert len(server.alerts) == 1
 
 
+def test_test_alert_sends_slack_when_email_is_unconfigured(account):
+    server, _ = account
+    page = server.get("/app/settings")
+    server.post("/app/settings", data={"csrf": csrf_from(page.text), "name": "w", "threshold": "4",
+                                       "slack_webhook": "https://hooks.slack.com/services/T/B/x",
+                                       "alert_email": "owner@example.com"})
+    response = server.post("/app/settings/test-alert", data={"csrf": csrf_from(page.text)},
+                           follow_redirects=False)
+    assert "alert-sent-slack-only" in response.headers["location"]
+    assert len(server.alerts) == 1
+
+
 def test_test_alert_reports_delivery_failure(account):
     server, _ = account
     page = server.get("/app/settings")

@@ -30,7 +30,8 @@ NOTICES = {
     "stopped": ("success", "Run stopped."),
     "revoked": ("success", "Key revoked. Agents using it will get a 401 on their next request."),
     "password": ("success", "Password changed. Other sessions were logged out."),
-    "alert-sent": ("success", "Test alert delivered. Check Slack and your inbox."),
+    "alert-sent": ("success", "Test alert delivered to configured channels."),
+    "alert-sent-slack-only": ("success", "Slack test alert delivered. Email requires SMTP settings on the server."),
     "alert-none": ("error", "Add a Slack webhook or alert email first, then save."),
 }
 
@@ -365,7 +366,7 @@ def build_router(state) -> APIRouter:
         ws = accounts.workspace(session.workspace_id)
         if not ws.get("slack_webhook") and not ws.get("alert_email"):
             return RedirectResponse("/app/settings?notice=alert-none", status_code=303)
-        if ws.get("alert_email") and not settings.smtp_host:
+        if ws.get("alert_email") and not settings.smtp_host and not ws.get("slack_webhook"):
             return settings_page(request, session, "Email alerts need SMTP settings on the server.", 400)
         sample = {"run_id": "run_example", "rule": "no_progress", "action": "pause", "actor": "supervisor",
                   "message": "Test alert: the same 2 tests failed on 4 attempts across 4 code versions.",
@@ -375,7 +376,8 @@ def build_router(state) -> APIRouter:
         except Exception:
             logging.getLogger("agent_supra.alerts").exception("test alert delivery failed")
             return settings_page(request, session, "Test alert delivery failed. Check the server logs and alert settings.", 502)
-        return RedirectResponse("/app/settings?notice=alert-sent", status_code=303)
+        notice = "alert-sent-slack-only" if ws.get("alert_email") and not settings.smtp_host else "alert-sent"
+        return RedirectResponse(f"/app/settings?notice={notice}", status_code=303)
 
     @router.post("/app/settings/password", response_class=HTMLResponse)
     def change_password(request: Request, csrf: str = Form(""), current_: str = Form("", alias="current"),

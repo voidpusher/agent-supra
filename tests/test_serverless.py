@@ -84,6 +84,23 @@ def test_serverless_alert_delivered_before_return(supervisor):
     alerter.flush()
 
 
+def test_alert_delivery_attempts_email_after_slack_failure(monkeypatch):
+    delivered = []
+
+    def fail_slack(_webhook, _message):
+        raise OSError("webhook failed")
+
+    monkeypatch.setattr("agent_supra.server.alerts.send_slack", fail_slack)
+    monkeypatch.setattr("agent_supra.server.alerts.send_email",
+                        lambda _settings, _to, _subject, _body: delivered.append("email"))
+    alerter = Alerter(None, Settings(serverless=True, smtp_host="smtp.example.com"))
+    item = {"action": "pause", "message": "test", "rule": "no_progress", "run_id": "run_test"}
+    ws = {"slack_webhook": "https://hooks.slack.com/services/T/B/x", "alert_email": "owner@example.com"}
+    with pytest.raises(RuntimeError, match="Alert delivery failed for Slack"):
+        alerter._deliver(ws, item)
+    assert delivered == ["email"]
+
+
 def test_serverless_lifespan_starts_no_retention_thread(supervisor, monkeypatch):
     def unexpected_thread(*args, **kwargs):
         raise AssertionError("Serverless must use cron, not a perpetual thread")
