@@ -1,4 +1,4 @@
-# Launch verification — 13–14 October 2026
+# Launch verification — 13–15 October 2026
 
 Status: **the hosted beta works end to end, but public launch is not complete**.
 
@@ -29,6 +29,16 @@ Status: **the hosted beta works end to end, but public launch is not complete**.
   sync stream, chat, chat stream, async model, and async stream. Each path
   recorded one call with input tokens; a paused run blocked the next call
   locally. The repeatable check is `scripts/live_gemini_wrappers.py`.
+- On 15 October, a live Slack test alert appeared in Orrico Labs
+  `#all-orrico-labs`. Resend marked two test alerts to `sanchitp498@gmail.com`
+  delivered. The second message, sent after the custom-domain deployment,
+  linked to `https://agentsupra.in/app/runs/run_example`.
+- `agentsupra.in` and `www.agentsupra.in` show valid Vercel configurations.
+  `https://agentsupra.in/healthz` returned `{"ok":true,"version":"1.0.0"}`,
+  and `www` redirected to the apex. The quickstart now advertises
+  `AGENT_SUPRA_URL="https://agentsupra.in"`.
+- The Slack/email fanout fix in commit `2b51ef0` passed 100 local tests and
+  deployed successfully. Slack delivery remains independent of SMTP errors.
 
 ## External failures and open launch work
 
@@ -36,16 +46,15 @@ Status: **the hosted beta works end to end, but public launch is not complete**.
   impossible run stalled after two calls and timed out; its run was stopped.
   These were provider failures, not successful supervisor tests. The stable
   3.1 Flash-Lite retry above passed the real pause test.
-- No Slack webhook or SMTP provider is configured, so real alert delivery has
-  not been verified. The dashboard now reports a failed test alert instead of
-  claiming success when delivery fails.
+- Production outage recovery has not yet been exercised against the live
+  service. Slack and email deliveries above verify the configured destinations.
 - `SENTRY_DSN` is absent. Error notifications have not been verified.
 - Neon backups and a restore have not been verified. A production Postgres
   connection is working, but a recoverability check is still needed.
 - PyPI returns 404 for `agent-supra`. The site now uses a tested public GitHub
   install command until the package is published.
-- Terms are still labeled a private-beta draft. A domain, final terms review,
-  demo video, and the planned beta feedback week remain outside this technical
+- Terms are still labeled a private-beta draft. Final terms review, the demo
+  video, and the planned beta feedback week remain outside this technical
   verification.
 - The first live wrapper-check attempt with Gemini 3.1 Flash-Lite returned a
   Google 503 before any call completed. OpenAI and Anthropic still need

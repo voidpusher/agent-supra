@@ -7,21 +7,22 @@ The remaining boxes require a provider account, external delivery, or beta feedb
 
 - [x] Product name: **Agent Supra**. Package: `agent-supra` (free on PyPI on 13 Oct 2026). Command: `agent-supra`. Python import: `agent_supra`.
 - [ ] Register the PyPI name early by publishing a first release (step 4), so nobody else takes it.
-- [ ] Buy a domain (for example agentsupra.com or agentsupra.dev) and set `BASE_URL` to it.
+- [x] Connect `agentsupra.in` to Vercel, redirect `www` to the apex, and set production `BASE_URL` to `https://agentsupra.in`.
 - [ ] Claim the name on X and GitHub.
 
 ## 2. Test it (docs/testing-with-gemini.md)
 
 - [x] Local regression suite and synthetic supervisor flows pass.
 - [x] Live solvable and stuck Gemini runs complete and pause as expected.
-- [ ] Real Slack/email delivery and outage recovery are verified with configured destinations.
+- [x] Real Slack alert and Resend email delivery are verified with configured destinations.
+- [ ] Exercise outage recovery against the production service.
 
 ## 3. Deploy (docs/deploying.md)
 
 - [x] Deployed on Vercel with Neon Postgres; `/healthz` returns ok.
 - [x] The app uses its production HTTPS URL for links and secure cookies.
 - [ ] Sentry DSN set; trigger an error once and see it arrive.
-- [ ] SMTP set; test alert email arrives (check spam).
+- [x] Resend SMTP set; the production test alert was delivered to `sanchitp498@gmail.com`.
 - [ ] Database backups on; one restore tested.
 
 ## 4. Publish the SDK
