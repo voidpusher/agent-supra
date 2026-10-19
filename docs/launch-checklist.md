@@ -25,7 +25,7 @@ The remaining boxes require a recovery drill, external delivery, or beta feedbac
 - [x] External GitHub Actions health check calls production `/healthz` every 15 minutes; check the workflow run history for outages.
 - [x] Resend SMTP set; the production test alert was delivered to `sanchitp498@gmail.com`.
 - [x] Neon point-in-time recovery and a manual snapshot were each restored to an isolated branch and verified against production reference data (19 Oct 2026).
-- [ ] Repair the read-only backup login and verify one successful encrypted GitHub Actions artifact. Both secrets are configured, but the first run failed authentication. Neon's current Free plan shows a six-hour history window and no snapshot schedule; the single manual snapshot is a recovery point, not an ongoing backup policy.
+- [x] Replaced the failed backup login with a verified read-only role and confirmed one successful encrypted GitHub Actions artifact. The next scheduled run still needs checking.
 
 ## 4. Publish the SDK
 

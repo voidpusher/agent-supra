@@ -76,6 +76,15 @@ Status: **the hosted beta works end to end, but public launch is not complete**.
   failed because Neon rejected the `agent_supra_backup` login password. No
   encrypted backup artifact exists yet. A proposed `agent_supra_backup_v2`
   login is not present in Neon's production Roles page as of the latest check.
+- Later on 19 October, `agent_supra_backup_v2` was created on the production
+  branch and authenticated with SELECT on all 13 public relations, no INSERT
+  grants, and no administrative role attributes. The GitHub
+  `BACKUP_DATABASE_URL` secret was updated to this login. Manual backup
+  [run #2](https://github.com/voidpusher/agent-supra/actions/runs/39300257444)
+  succeeded, including encrypted export, decryption, isolated restore, and
+  table checks. GitHub retained encrypted artifact
+  `agent-supra-db-39300257444-1` (27.4 KB). The first scheduled run has not
+  yet occurred.
 - On 19 October, the current 109-test local regression suite passed, the
   source distribution and wheel rebuilt and passed `twine check`, and the
   production `/healthz` endpoint returned `{"ok":true,"version":"1.0.0"}`.
@@ -101,11 +110,10 @@ Status: **the hosted beta works end to end, but public launch is not complete**.
   scheduled runs can be delayed, and a failed run is only visible through
   GitHub's workflow status unless notifications are configured.
 - Neon's Free plan currently shows a six-hour point-in-time history window,
-  one manual snapshot, and no snapshot schedule. The isolated restores above
-  prove a recovery path for those points, but they do not provide recurring
-  or independently stored backups. Repair the backup login, run the encrypted
-  workflow successfully, and verify its artifact before relying on this
-  database for public customer data. The kept restored branch
+  one manual snapshot, and no snapshot schedule. The encrypted GitHub backup
+  now provides a separate recovery path, but the first scheduled run and a
+  restore of the retained artifact outside the workflow are still pending.
+  Keep the encryption key in a separate private recovery location. The kept restored branch
   contains a copy of production data and should be removed when no longer
   needed.
 - Terms are still labeled a private-beta draft. Final terms review, the demo

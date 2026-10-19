@@ -8,12 +8,14 @@ tables, and uploads only the encrypted archive. Each artifact is retained for
 30 days, subject to the repository's retention limit. The workflow can also be
 started from **Actions → production database backup → Run workflow**.
 
-**Current status (19 October 2026): not operational.** Both GitHub secret
-names are configured, but the first manual run failed with password
-authentication for `agent_supra_backup`. GitHub has no encrypted backup
-artifact yet. Check the Neon production role and its connection URL, then
-rerun the workflow and confirm an artifact appears before considering this
-backup policy active.
+**Current status (19 October 2026): first backup verified.** Manual
+[run #2](https://github.com/voidpusher/agent-supra/actions/runs/39300257444)
+passed export, AES-256-GCM encryption, decryption, isolated PostgreSQL 16
+restore, and table checks. GitHub retained encrypted artifact
+`agent-supra-db-39300257444-1`. The dedicated `agent_supra_backup_v2` login
+authenticated and had SELECT on all 13 public tables and sequences, no INSERT
+grants, and no administrative role attributes. The first scheduled run is
+still pending; check it at the next daily execution.
 
 ## Required repository secrets
 
