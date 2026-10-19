@@ -80,6 +80,11 @@ account was created before this restriction.
 
 ## Backups
 
+See [database-backups.md](database-backups.md) for the encrypted daily export,
+GitHub Actions setup, and recovery procedure. It is only operational after the
+two repository secrets are configured and a successful workflow run has been
+checked.
+
 For the production Neon project, check the branch's actual point-in-time
 recovery window and backup policy in the Neon console. [Neon says its Free
 plan has a six-hour instant-restore window](https://neon.com/blog/neon-free-plan-1-gb-per-project);
