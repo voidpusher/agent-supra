@@ -87,6 +87,13 @@ this is not a substitute
 for a longer-term backup if an incident is discovered later. Choose retention
 and independent exports to match the loss window the business can tolerate.
 
+As checked on 19 October 2026, `agent-supra` has a six-hour history window,
+one manual snapshot of `production` (shown as non-expiring), and no snapshot
+schedule. Both a point-in-time branch and a snapshot restore were verified in
+isolation against the production run and schema. The user elected to keep the
+snapshot-restored branch temporarily. Recurring, independent backups are still
+needed before public customer data is accepted.
+
 Perform a non-destructive recovery drill before inviting customers:
 
 1. Confirm the Neon project and primary branch used by Vercel's production
@@ -104,10 +111,18 @@ Perform a non-destructive recovery drill before inviting customers:
    launch report. Recheck production `/healthz`. Remove the temporary branch
    after the drill; it contains a copy of production data.
 
-Do not use Neon's **Restore** action on the production branch for this drill:
-that would change live data. Other database hosts need an equivalent restore
-into an isolated database. Render Postgres backups may depend on its plan;
-verify the current provider terms before relying on them.
+For a manual snapshot, use **Backup & Restore → Create snapshot** on the
+`production` branch. To test it, choose **Restore → Multi-step restore** so
+Neon creates a separate branch and leaves production unchanged. Run the same
+read-only reference queries against the restored branch. A snapshot is only a
+point-in-time copy; create a new one before major changes until recurring
+backups are configured. Track and remove temporary restored branches when
+they are no longer needed because they retain production data.
+
+Do not use Neon's one-step **Restore** action on the production branch for a
+drill: that would change live data. Other database hosts need an equivalent
+restore into an isolated database. Render Postgres backups may depend on its
+plan; verify the current provider terms before relying on them.
 
 ## Upgrades
 

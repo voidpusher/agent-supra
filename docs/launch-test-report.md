@@ -54,6 +54,18 @@ Status: **the hosted beta works end to end, but public launch is not complete**.
   The first alert appeared in Orrico Labs `#all-orrico-labs`, and Resend
   marked the email to `sanchitp498@gmail.com` delivered. Unauthenticated
   requests to `/app/errors` redirected to `/login`.
+- On 19 October, Neon project `agent-supra` in the Kampher organization was
+  confirmed as the production database by the known live run
+  `run_26d831f1a037439e`. Its `production` branch had 2 users, 8 runs, and
+  schema version 1. An isolated point-in-time branch from approximately
+  11:25 IST returned the same values and the expected `errors`,
+  `password_resets`, and `sessions` tables. That temporary branch was removed.
+- A manual snapshot of `production` was created at 11:31 IST. Neon shows it
+  as non-expiring. A multi-step restore created a separate branch, leaving
+  production unchanged; the restored branch returned the same counts, known
+  run, schema version, and tables. The user chose to keep the restored branch
+  `branch_from_snapshot_Oct 19, 2026 11:31 AM GMT+5:30` for now. The live
+  `/healthz` check remained healthy after the recovery drill.
 
 ## External failures and open launch work
 
@@ -67,8 +79,13 @@ Status: **the hosted beta works end to end, but public launch is not complete**.
   integrations, a total database or hosting outage can also interrupt error
   recording. An independent uptime check remains advisable before public
   launch.
-- Neon backups and a restore have not been verified. A production Postgres
-  connection is working, but a recoverability check is still needed.
+- Neon's Free plan currently shows a six-hour point-in-time history window,
+  one manual snapshot, and no snapshot schedule. The isolated restores above
+  prove a recovery path for those points, but they do not provide recurring
+  or independently stored backups. Set up a longer-lived backup policy before
+  relying on this database for public customer data. The kept restored branch
+  contains a copy of production data and should be removed when no longer
+  needed.
 - PyPI returns 404 for `agent-supra`. The site now uses a tested public GitHub
   install command until the package is published.
 - Terms are still labeled a private-beta draft. Final terms review, the demo

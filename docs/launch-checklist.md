@@ -23,7 +23,8 @@ The remaining boxes require a provider account, external delivery, or beta feedb
 - [x] The app uses its production HTTPS URL for links and secure cookies.
 - [x] First-party server-error inbox deployed; protected self-test recorded an error and delivered Slack and email alerts.
 - [x] Resend SMTP set; the production test alert was delivered to `sanchitp498@gmail.com`.
-- [ ] Database backups on; one restore tested.
+- [x] Neon point-in-time recovery and a manual snapshot were each restored to an isolated branch and verified against production reference data (19 Oct 2026).
+- [ ] Configure recurring, independently stored database backups. Neon's current Free plan shows a six-hour history window and no snapshot schedule; the single manual snapshot is a recovery point, not an ongoing backup policy.
 
 ## 4. Publish the SDK
 
