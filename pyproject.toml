@@ -19,6 +19,12 @@ classifiers = [
 # The SDK itself has no dependencies.
 dependencies = []
 
+[project.urls]
+Homepage = "https://agentsupra.in"
+Documentation = "https://agentsupra.in/docs/quickstart"
+Repository = "https://github.com/voidpusher/agent-supra"
+Issues = "https://github.com/voidpusher/agent-supra/issues"
+
 [project.optional-dependencies]
 server = [
   "fastapi>=0.110",
