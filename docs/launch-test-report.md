@@ -39,6 +39,15 @@ Status: **the hosted beta works end to end, but public launch is not complete**.
   `AGENT_SUPRA_URL="https://agentsupra.in"`.
 - The Slack/email fanout fix in commit `2b51ef0` passed 100 local tests and
   deployed successfully. Slack delivery remains independent of SMTP errors.
+- On 19 October, first-party server-error monitoring and an operator-only
+  self-test deployed at `d4132a7`. The 105-test local suite passed, Vercel
+  marked the production deployment Ready, and the custom-domain `/healthz`
+  returned `{"ok":true,"version":"1.0.0"}`. Live error capture and alert
+  delivery still await the operator session test.
+- Email-based password recovery was added for the inaccessible production
+  operator account. It uses a single-use, 30-minute token and invalidates
+  existing sessions after reset. The 107-test local suite passed; live
+  recovery and monitoring checks are still pending.
 
 ## External failures and open launch work
 
@@ -48,7 +57,7 @@ Status: **the hosted beta works end to end, but public launch is not complete**.
   3.1 Flash-Lite retry above passed the real pause test.
 - Production outage recovery has not yet been exercised against the live
   service. Slack and email deliveries above verify the configured destinations.
-- First-party server-error monitoring is under development; production error
+- First-party server-error monitoring is deployed, but its production error
   notifications have not yet been verified.
 - Neon backups and a restore have not been verified. A production Postgres
   connection is working, but a recoverability check is still needed.

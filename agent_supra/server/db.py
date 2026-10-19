@@ -73,6 +73,14 @@ sessions = Table(
     Column("expires_at", Float, nullable=False),
 )
 
+password_resets = Table(
+    "password_resets", metadata,
+    Column("user_id", String(40), ForeignKey("users.id", ondelete="CASCADE"), primary_key=True),
+    Column("token_hash", String(64), nullable=False, unique=True),
+    Column("created_at", Float, nullable=False),
+    Column("expires_at", Float, nullable=False),
+)
+
 tasks = Table(
     "tasks", metadata,
     Column("id", String(40), primary_key=True),

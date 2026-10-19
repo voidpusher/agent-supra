@@ -123,6 +123,46 @@ class Accounts:
             conn.execute(update(db.users).where(db.users.c.id == user_id).values(password_hash=hash_password(new)))
             conn.execute(delete(db.sessions).where(db.sessions.c.user_id == user_id))
 
+    def issue_password_reset(self, email: str) -> str | None:
+        """Return a single-use token for an existing account, at most once per 5 minutes."""
+        email = (email or "").strip().lower()
+        now = time.time()
+        with self.engine.begin() as conn:
+            user_id = conn.execute(select(db.users.c.id).where(db.users.c.email == email)).scalar_one_or_none()
+            if not user_id:
+                return None
+            previous = conn.execute(select(db.password_resets.c.created_at)
+                                    .where(db.password_resets.c.user_id == user_id)).scalar_one_or_none()
+            if previous is not None and previous > now - 300:
+                return None
+            token = secrets.token_urlsafe(32)
+            conn.execute(delete(db.password_resets).where(db.password_resets.c.user_id == user_id))
+            conn.execute(db.password_resets.insert().values(
+                user_id=user_id, token_hash=sha256(token), created_at=now,
+                expires_at=now + 1800))
+        return token
+
+    def reset_password(self, token: str, new: str) -> bool:
+        validate_password(new)
+        if not token or len(token) > 200:
+            return False
+        now = time.time()
+        with self.engine.begin() as conn:
+            row = conn.execute(select(db.password_resets.c.user_id).where(and_(
+                db.password_resets.c.token_hash == sha256(token),
+                db.password_resets.c.expires_at > now))).first()
+            if not row:
+                return False
+            consumed = conn.execute(delete(db.password_resets).where(and_(
+                db.password_resets.c.user_id == row.user_id,
+                db.password_resets.c.token_hash == sha256(token))))
+            if consumed.rowcount != 1:
+                return False
+            conn.execute(update(db.users).where(db.users.c.id == row.user_id)
+                         .values(password_hash=hash_password(new)))
+            conn.execute(delete(db.sessions).where(db.sessions.c.user_id == row.user_id))
+        return True
+
     # ------------------------------------------------------------------ sessions
     def create_session(self, user_id: str) -> str:
         token = secrets.token_urlsafe(32)

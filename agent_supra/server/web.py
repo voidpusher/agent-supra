@@ -18,7 +18,7 @@ from .. import pricing
 from ..detector import HEURISTIC_RULES, merge_policy
 from ..present import RULE_HELP, describe_event, rule_label
 from .accounts import Session
-from .alerts import compose, valid_slack_webhook
+from .alerts import compose, send_email, valid_slack_webhook
 from .core import SupervisorError
 
 SESSION_COOKIE = "as_session"
@@ -156,6 +156,63 @@ def build_router(state) -> APIRouter:
             return auth_page(request, "login", "That email and password don't match an account.", email, 401)
         response = RedirectResponse("/app", status_code=303)
         set_session(response, accounts.create_session(user_id))
+        return response
+
+    def recovery_page(request: Request, mode: str, *, token: str = "", message: str = "",
+                      status: int = 200):
+        csrf = request.cookies.get(PRE_CSRF_COOKIE) or secrets.token_urlsafe(24)
+        response = page(request, "password_reset.html", status, mode=mode, token=token,
+                        message=message, csrf=csrf)
+        response.set_cookie(PRE_CSRF_COOKIE, csrf, max_age=3600, httponly=True,
+                            secure=settings.secure_cookies, samesite="strict", path="/")
+        response.headers["Referrer-Policy"] = "no-referrer"
+        response.headers["Cache-Control"] = "no-store"
+        return response
+
+    @router.get("/forgot-password", response_class=HTMLResponse)
+    def forgot_password_form(request: Request):
+        return recovery_page(request, "request")
+
+    @router.post("/forgot-password", response_class=HTMLResponse)
+    def forgot_password(request: Request, email: str = Form(""), csrf: str = Form("")):
+        if not pre_csrf_ok(request, csrf):
+            return recovery_page(request, "request", message="That form expired. Try again.", status=403)
+        if auth_limited(request):
+            return recovery_page(request, "request", message="Too many attempts. Wait a minute.", status=429)
+        token = accounts.issue_password_reset(email)
+        if token and settings.smtp_host:
+            try:
+                send_email(settings, email.strip().lower(), "Reset your Agent Supra password",
+                           f"Open this link within 30 minutes to reset your password:\n"
+                           f"{settings.base_url}/reset-password?token={token}\n\n"
+                           "If you did not request this, you can ignore this email.")
+            except Exception:
+                logging.getLogger("agent_supra.web").warning("password reset email delivery failed")
+        return recovery_page(request, "sent")
+
+    @router.get("/reset-password", response_class=HTMLResponse)
+    def reset_password_form(request: Request, token: str = ""):
+        return recovery_page(request, "reset", token=token[:200])
+
+    @router.post("/reset-password", response_class=HTMLResponse)
+    def reset_password(request: Request, token: str = Form(""), password: str = Form(""),
+                       csrf: str = Form("")):
+        if not pre_csrf_ok(request, csrf):
+            return recovery_page(request, "reset", token=token[:200],
+                                 message="That form expired. Try again.", status=403)
+        if auth_limited(request):
+            return recovery_page(request, "reset", token=token[:200],
+                                 message="Too many attempts. Wait a minute.", status=429)
+        try:
+            reset = accounts.reset_password(token, password)
+        except SupervisorError as exc:
+            return recovery_page(request, "reset", token=token[:200],
+                                 message=str(exc).capitalize() + ".", status=400)
+        if not reset:
+            return recovery_page(request, "reset", token="",
+                                 message="This link is invalid or expired. Request a new one.", status=400)
+        response = recovery_page(request, "complete")
+        response.delete_cookie(SESSION_COOKIE, path="/")
         return response
 
     @router.get("/signup", response_class=HTMLResponse)

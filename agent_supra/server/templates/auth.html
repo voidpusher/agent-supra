@@ -19,7 +19,7 @@
   </div>
   <p class="muted small center">
     {% if mode == "signup" %}Already have an account? <a href="/login">Log in</a>
-    {% else %}{% if allow_signup %}New here? <a href="/signup">Create an account</a>{% endif %}{% endif %}
+    {% else %}{% if allow_signup %}New here? <a href="/signup">Create an account</a> · {% endif %}<a href="/forgot-password">Forgot password?</a>{% endif %}
   </p>
 </div>
 {% endblock %}
