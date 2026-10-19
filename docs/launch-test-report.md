@@ -69,8 +69,15 @@ Status: **the hosted beta works end to end, but public launch is not complete**.
 - On 19 October, GitHub Actions `production health` run
   [#1](https://github.com/voidpusher/agent-supra/actions/runs/39242870800)
   successfully checked the public `/healthz` endpoint. The scheduled cadence
-  has not yet been observed. The encrypted daily database backup workflow is
-  committed but awaits two repository secrets and a first successful run.
+  has not yet been observed. Both encrypted-backup repository secret names are
+  present. Its first manual run
+  [#1](https://github.com/voidpusher/agent-supra/actions/runs/39246192766)
+  failed because Neon rejected the `agent_supra_backup` login password. No
+  encrypted backup artifact exists yet. A proposed `agent_supra_backup_v2`
+  login is not present in Neon's production Roles page as of the latest check.
+- On 19 October, the current 109-test local regression suite passed, the
+  source distribution and wheel rebuilt and passed `twine check`, and the
+  production `/healthz` endpoint returned `{"ok":true,"version":"1.0.0"}`.
 
 ## External failures and open launch work
 
@@ -89,8 +96,9 @@ Status: **the hosted beta works end to end, but public launch is not complete**.
 - Neon's Free plan currently shows a six-hour point-in-time history window,
   one manual snapshot, and no snapshot schedule. The isolated restores above
   prove a recovery path for those points, but they do not provide recurring
-  or independently stored backups. Set up a longer-lived backup policy before
-  relying on this database for public customer data. The kept restored branch
+  or independently stored backups. Repair the backup login, run the encrypted
+  workflow successfully, and verify its artifact before relying on this
+  database for public customer data. The kept restored branch
   contains a copy of production data and should be removed when no longer
   needed.
 - PyPI returns 404 for `agent-supra`. The site now uses a tested public GitHub
