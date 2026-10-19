@@ -68,8 +68,9 @@ Status: **the hosted beta works end to end, but public launch is not complete**.
   `/healthz` check remained healthy after the recovery drill.
 - On 19 October, GitHub Actions `production health` run
   [#1](https://github.com/voidpusher/agent-supra/actions/runs/39242870800)
-  successfully checked the public `/healthz` endpoint. The scheduled cadence
-  has not yet been observed. Both encrypted-backup repository secret names are
+  successfully checked the public `/healthz` endpoint. The first scheduled
+  [run #2](https://github.com/voidpusher/agent-supra/actions/runs/39294772027)
+  also passed. Both encrypted-backup repository secret names are
   present. Its first manual run
   [#1](https://github.com/voidpusher/agent-supra/actions/runs/39246192766)
   failed because Neon rejected the `agent_supra_backup` login password. No
