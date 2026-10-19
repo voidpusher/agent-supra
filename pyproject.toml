@@ -28,7 +28,6 @@ server = [
   "jinja2>=3.1",
   "python-multipart>=0.0.9",
 ]
-sentry = ["sentry-sdk[fastapi]>=2.0"]
 dev = [
   "agent-supra[server]",
   "pytest>=8",

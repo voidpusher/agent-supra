@@ -63,6 +63,8 @@ def build_router(state) -> APIRouter:
 
     def page(request: Request, name: str, status: int = 200, **ctx) -> HTMLResponse:
         ctx.setdefault("session", getattr(request.state, "session", None))
+        session = ctx["session"]
+        ctx.setdefault("operator", bool(session and session.email.casefold() == settings.contact_email.casefold()))
         code = request.query_params.get("notice")
         if code in NOTICES and "notice" not in ctx:
             kind, text = NOTICES[code]
@@ -169,6 +171,8 @@ def build_router(state) -> APIRouter:
             return auth_page(request, "signup", "That form expired. Try again.", email, 403)
         if auth_limited(request):
             return auth_page(request, "signup", "Too many attempts. Wait a minute and try again.", email, 429)
+        if email.strip().casefold() == settings.contact_email.casefold():
+            return auth_page(request, "signup", "This address is reserved for the site operator.", email, 403)
         try:
             user_id, _ = accounts.signup(email, password)
         except SupervisorError as exc:
@@ -201,6 +205,16 @@ def build_router(state) -> APIRouter:
         return page(request, "runs.html", nav="runs", runs=rows[:100], more=len(rows) > 100,
                     next_offset=offset + 100, state=state_filter, paused_count=paused,
                     stats=sup.stats(workspace_id=session.workspace_id))
+
+    @router.get("/app/errors", response_class=HTMLResponse)
+    def errors_page(request: Request):
+        session = current(request)
+        if not session:
+            return login_redirect()
+        if session.email.casefold() != settings.contact_email.casefold():
+            return page(request, "error.html", 403, title="Access denied",
+                        message="Only the site operator can view server errors.")
+        return page(request, "errors.html", nav="errors", errors=state.monitor.list_recent())
 
     @router.get("/app/runs/{run_id}", response_class=HTMLResponse)
     def run_page(request: Request, run_id: str):

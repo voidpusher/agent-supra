@@ -100,9 +100,8 @@ All server settings are environment variables. See [`.env.example`](.env.example
 | `BASE_URL` | `http://localhost:8000` | Public URL; `https://` turns on secure cookies and HSTS |
 | `APP_NAME` | `Agent Supra` | Product name shown everywhere |
 | `ALLOW_SIGNUP` | `true` | `false` for invite-only (`agent-supra create-user`) |
-| `RETENTION_DAYS` | `30` | Run data older than this is deleted every 6 hours |
+| `RETENTION_DAYS` | `30` | Run and server-error data older than this is deleted every 6 hours or by the daily cron |
 | `SMTP_*` | unset | Email alerts |
-| `SENTRY_DSN` | unset | Error tracking |
 | `AGENT_SUPRA_PRICES` | unset | Extra model prices, `{"model": [input, output]}` USD per 1M tokens |
 
 ## Deploying

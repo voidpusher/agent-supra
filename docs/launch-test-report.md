@@ -48,7 +48,8 @@ Status: **the hosted beta works end to end, but public launch is not complete**.
   3.1 Flash-Lite retry above passed the real pause test.
 - Production outage recovery has not yet been exercised against the live
   service. Slack and email deliveries above verify the configured destinations.
-- `SENTRY_DSN` is absent. Error notifications have not been verified.
+- First-party server-error monitoring is under development; production error
+  notifications have not yet been verified.
 - Neon backups and a restore have not been verified. A production Postgres
   connection is working, but a recoverability check is still needed.
 - PyPI returns 404 for `agent-supra`. The site now uses a tested public GitHub

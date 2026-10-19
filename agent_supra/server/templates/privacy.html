@@ -25,12 +25,12 @@
   <p>Your email address and a scrypt hash of your password. API keys and login sessions are stored only as SHA-256 hashes, so they can't be read back out of the database.</p>
 
   <h2>How long it's kept</h2>
-  <p>Run data is deleted after {{ retention_days }} days. Account details stay until you delete your account.</p>
+  <p>Run data and unexpected server-error records are deleted after {{ retention_days }} days. Error records contain an exception type, route pattern, stack locations, and occurrence times and counts; they exclude exception messages and request contents. Account details stay until you delete your account.</p>
 
   <h2>Deleting your data</h2>
   <p>Settings, then Delete account, removes your workspace, every run and event, your API keys and your login immediately.</p>
 
   <h2>Who processes it</h2>
-  <p>Data is stored with this service's hosting and database provider. Alerts go only to the Slack webhook and email address you set.</p>
+  <p>Data is stored with this service's hosting and database provider. Run alerts go to the Slack webhook and email address you set. New server-error alerts go to the site operator's configured Slack webhook and email address.</p>
 </main>
 {% endblock %}

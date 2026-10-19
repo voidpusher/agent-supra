@@ -30,8 +30,6 @@ services:
         value: "30"
       - key: WEB_CONCURRENCY
         value: "2"
-      - key: SENTRY_DSN
-        sync: false
       - key: SMTP_HOST
         sync: false
       - key: SMTP_USER

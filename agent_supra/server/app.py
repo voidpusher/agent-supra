@@ -26,6 +26,7 @@ from . import api, db, web
 from .accounts import Accounts
 from .alerts import Alerter
 from .core import Supervisor, SupervisorError
+from .errors import ErrorMonitor
 from .ratelimit import RateLimiter
 from .settings import Settings
 
@@ -35,28 +36,17 @@ CSP = ("default-src 'self'; style-src 'self' https://fonts.googleapis.com; font-
        "img-src 'self' data:; script-src 'self'; form-action 'self'; frame-ancestors 'none'; base-uri 'none'")
 
 
-def _init_sentry(dsn: str | None) -> None:
-    if not dsn:
-        return
-    try:
-        import sentry_sdk
-        sentry_sdk.init(dsn=dsn, traces_sample_rate=0.0, send_default_pii=False)
-        log.info("Sentry error reporting enabled")
-    except ImportError:
-        log.warning("SENTRY_DSN is set but sentry-sdk isn't installed: pip install 'agent-supra[server,sentry]'")
-
-
 def create_app(settings: Settings | None = None, supervisor: Supervisor | None = None,
                alert_sender=None) -> FastAPI:
     settings = settings or Settings.from_env()
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
-    _init_sentry(settings.sentry_dsn)
-
     sup = supervisor or Supervisor(db.make_engine(settings.database_url, serverless=settings.serverless))
     accounts = Accounts(sup.engine)
     alerter = Alerter(accounts, settings, sender=alert_sender)
+    monitor = ErrorMonitor(sup.engine, settings)
     sup.on_intervention = alerter
     state = SimpleNamespace(settings=settings, supervisor=sup, accounts=accounts, alerter=alerter,
+                            monitor=monitor,
                             event_limiter=RateLimiter(settings.events_per_minute),
                             auth_limiter=RateLimiter(settings.auth_attempts_per_minute,
                                                      burst=settings.auth_attempts_per_minute))
@@ -68,6 +58,7 @@ def create_app(settings: Settings | None = None, supervisor: Supervisor | None =
         while True:
             try:
                 removed = sup.prune(settings.retention_days)
+                monitor.prune(settings.retention_days)
                 if removed:
                     log.info("retention: removed %d run(s) older than %d days", removed, settings.retention_days)
             except Exception:
@@ -130,7 +121,15 @@ def create_app(settings: Settings | None = None, supervisor: Supervisor | None =
 
     @app.exception_handler(Exception)
     async def crash(request: Request, exc: Exception):
-        log.exception("unhandled error on %s %s", request.method, request.url.path)
+        # A route pattern avoids storing user-supplied URL segments. Never log
+        # exception messages here; they may contain credentials or user data.
+        route = request.scope.get("route")
+        path = getattr(route, "path", "/unmatched")
+        log.error("unhandled %s on %s %s", type(exc).__name__, request.method, path)
+        try:
+            monitor.record(exc, path)
+        except Exception:
+            log.error("server error monitoring failed")
         return JSONResponse({"error": "internal error"}, status_code=500)
 
     @app.get("/healthz", include_in_schema=False)
@@ -146,6 +145,7 @@ def create_app(settings: Settings | None = None, supervisor: Supervisor | None =
                 request.headers.get("authorization", "").encode(), expected.encode()):
             return JSONResponse({"error": "unauthorized"}, status_code=401)
         removed = sup.prune(settings.retention_days) if settings.retention_days > 0 else 0
+        monitor.prune(settings.retention_days)
         return JSONResponse({"ok": True, "removed": removed}, headers={"Cache-Control": "no-store"})
 
     app.include_router(api.build_router(state))

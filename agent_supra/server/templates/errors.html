@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Server errors | {{ app_name }}{% endblock %}
+{% block content %}
+<div class="page-head"><div><h1>Server errors</h1>
+<p class="sub">Unexpected application errors, grouped by type, route, and stack location. Only the site operator can see this page.</p></div></div>
+{% if errors %}
+<div class="table-wrap"><table>
+  <thead><tr><th>Error</th><th>Route</th><th>Occurrences</th><th>Last seen</th></tr></thead>
+  <tbody>{% for error in errors %}
+  <tr>
+    <td><details><summary><strong>{{ error.exception_type }}</strong></summary><pre class="error-stack">{{ error.stack }}</pre></details></td>
+    <td><code>{{ error.path }}</code></td>
+    <td>{{ error.occurrences }}</td>
+    <td><time title="{{ error.last_seen | datetime }}">{{ error.last_seen | ago }}</time></td>
+  </tr>
+  {% endfor %}</tbody>
+</table></div>
+{% else %}
+<section class="panel"><h2>No server errors recorded</h2><p class="muted">Unexpected 500 errors will appear here. The monitor keeps no request bodies, headers, exception messages, or local variables.</p></section>
+{% endif %}
+{% endblock %}

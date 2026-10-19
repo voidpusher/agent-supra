@@ -18,8 +18,9 @@ The current hosted beta runs on Vercel with Neon Postgres at
    authenticated dashboard session and an API-key run end to end. Check the
    production function logs for errors.
 5. Configure Neon backups and test a restore before accepting real customer data.
-   Set `SENTRY_DSN` for error alerts, and `SMTP_*` or a workspace Slack webhook
-   for intervention alerts. Use the Settings test alert and confirm it arrives.
+   Set `SMTP_*` and the operator workspace's Slack webhook for alerts. Use the
+   Settings test alert and confirm it arrives. Unexpected 500 errors appear in
+   the operator-only `/app/errors` inbox and alert on first occurrence.
 
 The SDK is currently installed from the public GitHub repository; publish it to
 PyPI and change the site's install command only after a fresh install succeeds.
@@ -35,7 +36,7 @@ containers works.
 2. In Render: **New**, then **Blueprint**, then pick the repo. Render reads `render.yaml` and creates:
    - a Postgres database (`0.1c-256mb`)
    - the web service (`0.5c-512mb`, Docker), with `DATABASE_URL` wired to the database
-3. When it asks for the `sync: false` values (SMTP, Sentry), leave them empty for now if you don't have them.
+3. When it asks for the `sync: false` SMTP values, leave them empty for now if you don't have them.
 4. After the first deploy, set `BASE_URL` to the service URL Render gives you (or your domain) and redeploy. It's used in alert links and turns on secure cookies.
 5. Open `/healthz`. You should see `{"ok": true, ...}`.
 
@@ -63,7 +64,19 @@ Set `SMTP_HOST`, `SMTP_PORT` (587), `SMTP_USER`, `SMTP_PASSWORD` and `SMTP_FROM`
 
 ## Error tracking
 
-Create a free Sentry project and set `SENTRY_DSN`. The image already includes the Sentry SDK.
+Unexpected server errors are grouped by type, route pattern and stack location
+in `/app/errors`, accessible only to the account whose email matches
+`CONTACT_EMAIL`. The first occurrence is sent to that account's workspace Slack
+webhook and alert email, if configured; otherwise it goes to `CONTACT_EMAIL`
+when SMTP is configured. Error data uses `RETENTION_DAYS`. The monitor does not
+store exception messages, request bodies, headers or local variables. Also
+watch Vercel function logs and an independent uptime check: an application
+inbox cannot record failures when its database or process is unavailable.
+
+The `CONTACT_EMAIL` address is reserved from public signup so another user
+cannot claim operator access. Create that account with `agent-supra create-user`
+before opening signup on a fresh installation. The existing hosted operator
+account was created before this restriction.
 
 ## Backups
 

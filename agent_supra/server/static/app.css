@@ -298,6 +298,7 @@ textarea { font-family: var(--mono); font-size: 14px; min-height: 96px; resize: 
 .two-col aside { position: sticky; top: 92px; }
 @media (max-width: 860px) { .two-col { grid-template-columns: minmax(0, 1fr); } .two-col aside { position: static; } }
 details summary { cursor: pointer; font-weight: 600; }
+.error-stack { max-width: min(70vw, 680px); overflow-x: auto; padding: 12px; font-family: var(--mono); font-size: 12px; line-height: 1.5; }
 .empty { padding: 36px 8px; text-align: center; color: var(--label-2); }
 .empty strong { color: var(--label); font-size: 17px; }
 pre.snippet { font-family: var(--mono); font-size: 13.5px; line-height: 1.55; margin: 0; overflow-x: auto;

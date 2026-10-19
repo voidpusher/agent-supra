@@ -21,7 +21,7 @@ The remaining boxes require a provider account, external delivery, or beta feedb
 
 - [x] Deployed on Vercel with Neon Postgres; `/healthz` returns ok.
 - [x] The app uses its production HTTPS URL for links and secure cookies.
-- [ ] Sentry DSN set; trigger an error once and see it arrive.
+- [ ] First-party server-error inbox deployed; trigger an error once and verify the operator-only page and alert.
 - [x] Resend SMTP set; the production test alert was delivered to `sanchitp498@gmail.com`.
 - [ ] Database backups on; one restore tested.
 
@@ -53,4 +53,4 @@ twine upload dist/*            # needs a PyPI account and API token
 - [ ] X thread with the demo video.
 - [ ] Show HN post ("Show HN: <name>, pauses AI agents that are stuck in a loop").
 - [ ] r/LocalLLaMA and relevant agent-framework communities, written as a builder, not an ad.
-- [ ] Watch Sentry and the server logs for the first 48 hours.
+- [ ] Watch the server-error inbox and Vercel function logs for the first 48 hours.

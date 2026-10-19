@@ -8,7 +8,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 WORKDIR /app
 COPY pyproject.toml README.md LICENSE ./
 COPY agent_supra ./agent_supra
-RUN pip install ".[server,sentry]" && useradd --create-home --uid 10001 app
+RUN pip install ".[server]" && useradd --create-home --uid 10001 app
 USER app
 
 EXPOSE 8000

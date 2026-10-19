@@ -21,6 +21,7 @@
     <a class="brand" href="/app"><span class="brand-mark" aria-hidden="true"></span>{{ app_name }}</a>
     <nav class="nav" aria-label="Main">
       <a href="/app" {% if nav == "runs" %}aria-current="page"{% endif %}>Runs</a>
+      {% if operator %}<a href="/app/errors" {% if nav == "errors" %}aria-current="page"{% endif %}>Server errors</a>{% endif %}
       <a href="/app/keys" {% if nav == "keys" %}aria-current="page"{% endif %}>API keys</a>
       <a href="/app/settings" {% if nav == "settings" %}aria-current="page"{% endif %}>Settings</a>
       <a href="/docs/quickstart" {% if nav == "docs" %}aria-current="page"{% endif %}>Quickstart</a>

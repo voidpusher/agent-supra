@@ -32,7 +32,6 @@ class Settings:
     smtp_user: str | None = None
     smtp_password: str | None = None
     smtp_from: str | None = None
-    sentry_dsn: str | None = None
 
     @classmethod
     def from_env(cls) -> "Settings":
@@ -62,5 +61,4 @@ class Settings:
             smtp_user=os.environ.get("SMTP_USER") or None,
             smtp_password=os.environ.get("SMTP_PASSWORD") or None,
             smtp_from=os.environ.get("SMTP_FROM") or None,
-            sentry_dsn=os.environ.get("SENTRY_DSN") or None,
         )

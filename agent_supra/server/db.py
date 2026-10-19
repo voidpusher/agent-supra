@@ -134,6 +134,20 @@ interventions = Table(
     Index("ix_interventions_run", "run_id", "created_at"),
 )
 
+errors = Table(
+    "errors", metadata,
+    Column("fingerprint", String(64), primary_key=True),
+    Column("exception_type", String(120), nullable=False),
+    Column("path", String(200), nullable=False),
+    Column("stack", Text, nullable=False),
+    Column("occurrences", Integer, nullable=False, default=1),
+    Column("first_seen", Float, nullable=False),
+    Column("last_seen", Float, nullable=False),
+    Column("last_alert_attempt", Float, nullable=False),
+    Column("notified_at", Float),
+    Index("ix_errors_last_seen", "last_seen"),
+)
+
 
 def normalize_url(url: str) -> str:
     if url.startswith("postgres://"):
@@ -176,7 +190,8 @@ def migrate(engine: Engine) -> int:
             conn.execute(schema_info.insert().values(id=1, version=SCHEMA_VERSION, applied_at=time.time()))
         elif row.version > SCHEMA_VERSION:
             raise RuntimeError(f"database schema v{row.version} is newer than this code (v{SCHEMA_VERSION})")
-        # Future migrations: `if row.version < 2: ...` then update the version.
+        # Additive tables are created above without raising the schema version,
+        # so the previous deployment can still run during a rollback.
     return SCHEMA_VERSION
 
 
