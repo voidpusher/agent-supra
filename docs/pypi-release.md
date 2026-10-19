@@ -7,7 +7,9 @@ through PyPI Trusted Publishing. It needs no stored PyPI API token.
 ## First-time PyPI setup
 
 1. Sign in to a PyPI account. If you need to register, review and accept PyPI's
-   terms yourself.
+   terms yourself. PyPI requires a verified primary email and two-factor
+   authentication before opening the Publishing settings. Generate recovery
+   codes, store them privately, and complete 2FA setup in your account.
 2. In PyPI account **Publishing**, add a **pending GitHub publisher** for:
 
    | Field | Value |
