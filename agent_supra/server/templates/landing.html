@@ -41,7 +41,7 @@
     <h2>A spend cap can't tell stuck from busy</h2>
     <p class="intro">An agent working through a hard bug and an agent going in circles both just look like money being spent. {{ app_name }} watches what each attempt achieved, so a run that's making progress keeps going, and a run that isn't gets stopped with an explanation.</p>
     <ol class="steps">
-      <li><h3>Install the SDK</h3><p class="muted"><code>pip install git+https://github.com/voidpusher/agent-supra.git</code>. The SDK has no dependencies and works with Gemini, OpenAI and Anthropic clients. Install your model provider's client separately.</p></li>
+      <li><h3>Install the SDK</h3><p class="muted"><code>pip install agent-supra</code>. The SDK has no dependencies and works with Gemini, OpenAI and Anthropic clients. Install your model provider's client separately.</p></li>
       <li><h3>Wrap your agent</h3><p class="muted">Wrap your model client, then report each test run. A few lines in the loop you already have.</p></li>
       <li><h3>Review what it catches</h3><p class="muted">Start in observation mode. When the flags look right, let it pause runs, and get a Slack message when it does.</p></li>
     </ol>

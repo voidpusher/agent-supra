@@ -12,7 +12,7 @@
 
   <h2>1. Get an API key</h2>
   <p>{% if session %}<a href="/app/keys">Create a key</a>{% else %}<a href="/signup">Create an account</a>, then create a key{% endif %} and set it in your environment:</p>
-<pre class="snippet">pip install git+https://github.com/voidpusher/agent-supra.git
+<pre class="snippet">pip install agent-supra
 pip install google-genai
 export AGENT_SUPRA_API_KEY="as_live_…"
 export AGENT_SUPRA_URL="{{ base_url }}"</pre>

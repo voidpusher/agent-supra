@@ -37,8 +37,8 @@ through PyPI Trusted Publishing. It needs no stored PyPI API token.
    `https://pypi.org/project/agent-supra/`.
 4. In a fresh virtual environment, run `pip install agent-supra` and import
    `Client` from `agent_supra`.
-5. Update the README and hosted quickstart from the GitHub install URL to
-   `pip install agent-supra` only after the clean install passes.
+5. Confirm the README and hosted quickstart offer `pip install agent-supra`
+   after the clean install passes.
 
 Never publish a new build with an already-used version. Increment the version
 in `pyproject.toml` before the next release.
