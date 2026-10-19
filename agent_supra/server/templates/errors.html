@@ -3,6 +3,11 @@
 {% block content %}
 <div class="page-head"><div><h1>Server errors</h1>
 <p class="sub">Unexpected application errors, grouped by type, route, and stack location. Only the site operator can see this page.</p></div></div>
+<form method="post" action="/app/errors/test">
+  <input type="hidden" name="csrf" value="{{ session.csrf }}">
+  <button class="btn quiet" type="submit">Trigger test error</button>
+  <span class="muted">This returns a deliberate 500. The error will appear here; the first occurrence also sends alerts.</span>
+</form>
 {% if errors %}
 <div class="table-wrap"><table>
   <thead><tr><th>Error</th><th>Route</th><th>Occurrences</th><th>Last seen</th></tr></thead>

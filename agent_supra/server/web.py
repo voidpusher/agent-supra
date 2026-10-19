@@ -23,6 +23,12 @@ from .core import SupervisorError
 
 SESSION_COOKIE = "as_session"
 PRE_CSRF_COOKIE = "as_csrf"
+
+
+class MonitoringSelfTest(Exception):
+    """Operator-triggered error for checking the production capture path."""
+
+
 NOTICES = {
     "saved": ("success", "Settings saved."),
     "continued": ("success", "Run continued."),
@@ -215,6 +221,18 @@ def build_router(state) -> APIRouter:
             return page(request, "error.html", 403, title="Access denied",
                         message="Only the site operator can view server errors.")
         return page(request, "errors.html", nav="errors", errors=state.monitor.list_recent())
+
+    @router.post("/app/errors/test")
+    def test_error_monitor(request: Request, csrf: str = Form("")):
+        session = current(request)
+        if not session:
+            return login_redirect()
+        if session.email.casefold() != settings.contact_email.casefold():
+            return page(request, "error.html", 403, title="Access denied",
+                        message="Only the site operator can test server errors.")
+        if not check_csrf(session, csrf):
+            return forbidden(request)
+        raise MonitoringSelfTest()
 
     @router.get("/app/runs/{run_id}", response_class=HTMLResponse)
     def run_page(request: Request, run_id: str):

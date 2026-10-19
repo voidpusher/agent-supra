@@ -50,9 +50,18 @@ def test_server_error_inbox_groups_and_redacts(monkeypatch):
     assert len(delivered) == 2  # first occurrence only, through both channels
     assert all("secret-" not in str(args) for _, args in delivered)
 
+    csrf = csrf_from(inbox.text)
+    test = operator.post("/app/errors/test", data={"csrf": csrf})
+    assert test.status_code == 500
+    assert "MonitoringSelfTest" in operator.get("/app/errors").text
+    assert len(delivered) == 4
+    assert operator.post("/app/errors/test", data={"csrf": csrf}).status_code == 500
+    assert len(delivered) == 4  # duplicate self-test does not spam alerts
+
     other = TestClient(app, raise_server_exceptions=False)
     signup(other, "other@example.com")
     assert other.get("/app/errors").status_code == 403
+    assert other.post("/app/errors/test", data={"csrf": "invalid"}).status_code == 403
     assert 'href="/app/errors"' not in other.get("/app").text
 
 
