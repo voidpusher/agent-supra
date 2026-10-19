@@ -1,7 +1,7 @@
 # Deploying
 
 The current hosted beta runs on Vercel with Neon Postgres at
-`https://agent-supra.vercel.app`. The repository also supports a Docker host.
+`https://agentsupra.in`. The repository also supports a Docker host.
 
 ## Vercel and Neon (current production setup)
 
@@ -11,7 +11,7 @@ The current hosted beta runs on Vercel with Neon Postgres at
 2. Create a Neon Postgres database in Singapore and set its pooled connection URL
    as the Vercel production `DATABASE_URL` secret. Do not commit it or put it in a
    deployment URL.
-3. Set `BASE_URL=https://agent-supra.vercel.app` (or the verified custom domain),
+3. Set `BASE_URL=https://agentsupra.in` (or another verified custom domain),
    `CONTACT_EMAIL`, and a random `CRON_SECRET` in Vercel's production environment.
    The cron is rejected with 401 unless the request carries Vercel's secret.
 4. Deploy from `main`. Check `/healthz` returns `{"ok":true,...}`, then verify an
@@ -80,7 +80,34 @@ account was created before this restriction.
 
 ## Backups
 
-Use your database host's automatic backups (Render Postgres includes them on paid plans). Test a restore once before launch.
+For the production Neon project, check the branch's actual point-in-time
+recovery window and backup policy in the Neon console. [Neon says its Free
+plan has a six-hour instant-restore window](https://neon.com/blog/neon-free-plan-1-gb-per-project);
+this is not a substitute
+for a longer-term backup if an incident is discovered later. Choose retention
+and independent exports to match the loss window the business can tolerate.
+
+Perform a non-destructive recovery drill before inviting customers:
+
+1. Confirm the Neon project and primary branch used by Vercel's production
+   `DATABASE_URL`. Never paste the connection string into a ticket or report.
+2. Record a UTC timestamp inside the available recovery window and a few
+   read-only reference values from production: table names, row counts, and
+   one known run ID.
+3. In Neon, [create a **new branch from that timestamp**](https://neon.com/docs/get-started-with-neon/workflow-primer)
+   with its own compute.
+   Keep the production branch and Vercel connection unchanged.
+4. Connect only to the new branch. Confirm `schema_info`, `users`, `runs`, and
+   `errors` exist, and compare the reference values, accounting for any writes
+   that happened after the selected timestamp.
+5. Record the recovery point, branch name, checks, and elapsed time in the
+   launch report. Recheck production `/healthz`. Remove the temporary branch
+   after the drill; it contains a copy of production data.
+
+Do not use Neon's **Restore** action on the production branch for this drill:
+that would change live data. Other database hosts need an equivalent restore
+into an isolated database. Render Postgres backups may depend on its plan;
+verify the current provider terms before relying on them.
 
 ## Upgrades
 
