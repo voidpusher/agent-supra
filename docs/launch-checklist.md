@@ -21,7 +21,7 @@ The remaining boxes require a provider account, external delivery, or beta feedb
 
 - [x] Deployed on Vercel with Neon Postgres; `/healthz` returns ok.
 - [x] The app uses its production HTTPS URL for links and secure cookies.
-- [ ] First-party server-error inbox deployed; trigger an error once and verify the operator-only page and alert.
+- [x] First-party server-error inbox deployed; protected self-test recorded an error and delivered Slack and email alerts.
 - [x] Resend SMTP set; the production test alert was delivered to `sanchitp498@gmail.com`.
 - [ ] Database backups on; one restore tested.
 

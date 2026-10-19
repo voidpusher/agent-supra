@@ -1,4 +1,4 @@
-# Launch verification — 13–15 October 2026
+# Launch verification — 13–19 October 2026
 
 Status: **the hosted beta works end to end, but public launch is not complete**.
 
@@ -46,8 +46,14 @@ Status: **the hosted beta works end to end, but public launch is not complete**.
   delivery still await the operator session test.
 - Email-based password recovery was added for the inaccessible production
   operator account. It uses a single-use, 30-minute token and invalidates
-  existing sessions after reset. The 107-test local suite passed; live
-  recovery and monitoring checks are still pending.
+  existing sessions after reset. The 107-test local suite passed. The
+  recovery email was delivered through Resend, and the operator signed in.
+- On 19 October, the operator-only production self-test returned the expected
+  generic 500 and created a `MonitoringSelfTest` entry in `/app/errors`.
+  Repeating it increased the occurrence count to 2 without a second email.
+  The first alert appeared in Orrico Labs `#all-orrico-labs`, and Resend
+  marked the email to `sanchitp498@gmail.com` delivered. Unauthenticated
+  requests to `/app/errors` redirected to `/login`.
 
 ## External failures and open launch work
 
@@ -57,8 +63,10 @@ Status: **the hosted beta works end to end, but public launch is not complete**.
   3.1 Flash-Lite retry above passed the real pause test.
 - Production outage recovery has not yet been exercised against the live
   service. Slack and email deliveries above verify the configured destinations.
-- First-party server-error monitoring is deployed, but its production error
-  notifications have not yet been verified.
+- Because this first-party inbox uses the app database and email/Slack
+  integrations, a total database or hosting outage can also interrupt error
+  recording. An independent uptime check remains advisable before public
+  launch.
 - Neon backups and a restore have not been verified. A production Postgres
   connection is working, but a recoverability check is still needed.
 - PyPI returns 404 for `agent-supra`. The site now uses a tested public GitHub
