@@ -85,6 +85,11 @@ Status: **the hosted beta works end to end, but public launch is not complete**.
   table checks. GitHub retained encrypted artifact
   `agent-supra-db-39300257444-1` (27.4 KB). The first scheduled run has not
   yet occurred.
+- The backup login password was subsequently rotated, the GitHub secret was
+  updated again, and manual
+  [run #3](https://github.com/voidpusher/agent-supra/actions/runs/39300792844)
+  passed with encrypted artifact `agent-supra-db-39300792844-1` (27.4 KB).
+  This run verifies the credential currently configured in GitHub.
 - On 19 October, the current 109-test local regression suite passed, the
   source distribution and wheel rebuilt and passed `twine check`, and the
   production `/healthz` endpoint returned `{"ok":true,"version":"1.0.0"}`.
