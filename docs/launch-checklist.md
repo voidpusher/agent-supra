@@ -1,12 +1,12 @@
 # Launch checklist
 
 Current technical status is recorded in [launch-test-report.md](launch-test-report.md).
-The remaining boxes require a provider account, external delivery, or beta feedback.
+The remaining boxes require a recovery drill, external delivery, or beta feedback.
 
 ## 1. Name: Agent Supra (decided)
 
-- [x] Product name: **Agent Supra**. Package: `agent-supra` (free on PyPI on 13 Oct 2026). Command: `agent-supra`. Python import: `agent_supra`.
-- [ ] Register the PyPI name early by publishing a first release (step 4), so nobody else takes it.
+- [x] Product name: **Agent Supra**. Package: `agent-supra` on PyPI. Command: `agent-supra`. Python import: `agent_supra`.
+- [x] Published version 1.0.0 to PyPI on 19 Oct 2026 through GitHub Trusted Publishing.
 - [x] Connect `agentsupra.in` to Vercel, redirect `www` to the apex, and set production `BASE_URL` to `https://agentsupra.in`.
 - [ ] Claim the name on X and GitHub.
 
@@ -29,13 +29,10 @@ The remaining boxes require a provider account, external delivery, or beta feedb
 
 ## 4. Publish the SDK
 
-```bash
-pip install build twine
-python -m build
-twine upload dist/*            # needs a PyPI account and API token
-```
-
-- [ ] `pip install <name>` works in a fresh virtualenv.
+- [x] Trusted PyPI publisher bound to `voidpusher/agent-supra` and the `pypi` GitHub environment; no API token is stored.
+- [x] Version 1.0.0 wheel and source distribution published; `pip install agent-supra==1.0.0` and SDK imports worked in a fresh virtual environment.
+- [x] Hosted quickstart now offers `pip install agent-supra`.
+- [ ] Before a subsequent release, increment the package version and follow [the release procedure](pypi-release.md).
 
 ## 5. Before people arrive
 

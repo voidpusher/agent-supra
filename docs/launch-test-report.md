@@ -79,6 +79,12 @@ Status: **the hosted beta works end to end, but public launch is not complete**.
 - On 19 October, the current 109-test local regression suite passed, the
   source distribution and wheel rebuilt and passed `twine check`, and the
   production `/healthz` endpoint returned `{"ok":true,"version":"1.0.0"}`.
+- On 19 October, the manual [PyPI release workflow](https://github.com/voidpusher/agent-supra/actions/runs/39298525140)
+  passed its build, test, metadata-check, and Trusted Publishing jobs.
+  PyPI lists `agent-supra` 1.0.0 with both the wheel and source distribution.
+  A fresh virtual environment downloaded the wheel from the public PyPI index,
+  imported `Client`, `SupervisedRun`, and `SupervisorPaused`, and reported
+  version 1.0.0. The live quickstart shows `pip install agent-supra`.
 
 ## External failures and open launch work
 
@@ -102,8 +108,6 @@ Status: **the hosted beta works end to end, but public launch is not complete**.
   database for public customer data. The kept restored branch
   contains a copy of production data and should be removed when no longer
   needed.
-- PyPI returns 404 for `agent-supra`. The site now uses a tested public GitHub
-  install command until the package is published.
 - Terms are still labeled a private-beta draft. Final terms review, the demo
   video, and the planned beta feedback week remain outside this technical
   verification.
