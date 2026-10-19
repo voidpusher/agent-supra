@@ -22,6 +22,7 @@ The remaining boxes require a provider account, external delivery, or beta feedb
 - [x] Deployed on Vercel with Neon Postgres; `/healthz` returns ok.
 - [x] The app uses its production HTTPS URL for links and secure cookies.
 - [x] First-party server-error inbox deployed; protected self-test recorded an error and delivered Slack and email alerts.
+- [x] External GitHub Actions health check calls production `/healthz` every 15 minutes; check the workflow run history for outages.
 - [x] Resend SMTP set; the production test alert was delivered to `sanchitp498@gmail.com`.
 - [x] Neon point-in-time recovery and a manual snapshot were each restored to an isolated branch and verified against production reference data (19 Oct 2026).
 - [ ] Configure recurring, independently stored database backups. Neon's current Free plan shows a six-hour history window and no snapshot schedule; the single manual snapshot is a recovery point, not an ongoing backup policy.
@@ -39,7 +40,7 @@ twine upload dist/*            # needs a PyPI account and API token
 ## 5. Before people arrive
 
 - [ ] Read the privacy page and make sure it's true for how you deployed (host, retention).
-- [ ] Add terms of service and a contact email to the footer.
+- [x] Terms page and contact email are linked from the footer. The private-beta terms still need final review before public launch.
 - [ ] Record a 60-second demo: the impossible-task run getting paused, then the dashboard.
 - [x] Public GitHub repository is connected; CI passed for the deployed commit.
 

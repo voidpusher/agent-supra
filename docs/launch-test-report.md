@@ -77,8 +77,10 @@ Status: **the hosted beta works end to end, but public launch is not complete**.
   service. Slack and email deliveries above verify the configured destinations.
 - Because this first-party inbox uses the app database and email/Slack
   integrations, a total database or hosting outage can also interrupt error
-  recording. An independent uptime check remains advisable before public
-  launch.
+  recording. The `production health` GitHub Actions workflow checks public
+  `/healthz` every 15 minutes, independently of the application. GitHub's
+  scheduled runs can be delayed, and a failed run is only visible through
+  GitHub's workflow status unless notifications are configured.
 - Neon's Free plan currently shows a six-hour point-in-time history window,
   one manual snapshot, and no snapshot schedule. The isolated restores above
   prove a recovery path for those points, but they do not provide recurring
