@@ -66,6 +66,11 @@ Status: **the hosted beta works end to end, but public launch is not complete**.
   run, schema version, and tables. The user chose to keep the restored branch
   `branch_from_snapshot_Oct 19, 2026 11:31 AM GMT+5:30` for now. The live
   `/healthz` check remained healthy after the recovery drill.
+- On 19 October, GitHub Actions `production health` run
+  [#1](https://github.com/voidpusher/agent-supra/actions/runs/39242870800)
+  successfully checked the public `/healthz` endpoint. The scheduled cadence
+  has not yet been observed. The encrypted daily database backup workflow is
+  committed but awaits two repository secrets and a first successful run.
 
 ## External failures and open launch work
 

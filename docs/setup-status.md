@@ -21,8 +21,13 @@ On 19 October, a Neon point-in-time branch and a manual snapshot were each
 restored into isolated branches and checked against production reference data.
 The snapshot is kept, and the user chose to keep its restored branch for now.
 Recurring, independently stored backups remain unconfigured: the Free plan
-shows six hours of history and no snapshot schedule. The hosted beta also
-needs PyPI publication, final terms review, and beta-user feedback before a
-public launch. See [launch-test-report.md](launch-test-report.md)
+shows six hours of history and no snapshot schedule. An encrypted daily GitHub
+Actions export and isolated restore check are committed, but the repository
+still needs `BACKUP_DATABASE_URL` and `BACKUP_ENCRYPTION_KEY` secrets and a
+successful first run. A separate `production health` GitHub Actions workflow
+passed a manual check on 19 October; its scheduled runs have not yet been
+observed. The hosted beta also needs PyPI publication, final terms review,
+and beta-user feedback before a public launch. See
+[launch-test-report.md](launch-test-report.md)
 for the exact checks, run IDs, and limitations. See [deploying.md](deploying.md)
 for current Vercel operations.
