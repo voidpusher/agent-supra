@@ -107,6 +107,12 @@ Status: **the hosted beta works end to end, but public launch is not complete**.
   transport recovered, test run `run_df49d54d89b94a29` was stopped. The
   temporary key was revoked in the dashboard. This verifies SDK behavior
   against the production API after recovery, not a real Vercel outage.
+- A 60-second, 1920×1080 captioned edited replay was rendered locally from
+  the verified Gemini attempt log and paused-run screenshot. It clearly labels
+  itself an edited replay, masks the operator account label, includes the
+  separately verified completed run, and contains no keys. Duration and
+  representative cut-boundary frames were checked. The file is local at
+  `.local/demo-video/edit/final.mp4`; it has not been posted publicly.
 - On 19 October, the current 109-test local regression suite passed, the
   source distribution and wheel rebuilt and passed `twine check`, and the
   production `/healthz` endpoint returned `{"ok":true,"version":"1.0.0"}`.
@@ -142,8 +148,8 @@ Status: **the hosted beta works end to end, but public launch is not complete**.
   needed.
 - The privacy page was corrected to name Vercel, Neon, GitHub encrypted
   backups, Resend, and retained recovery copies after active-account deletion.
-  Terms are still labeled a private-beta draft. Final legal review, the demo
-  video, and the planned beta feedback week remain outside this technical
+  Terms are still labeled a private-beta draft. Final legal review and the
+  planned beta feedback week remain outside this technical
   verification.
 - The first live wrapper-check attempt with Gemini 3.1 Flash-Lite returned a
   Google 503 before any call completed. OpenAI and Anthropic still need

@@ -36,10 +36,24 @@ Day 7: summarize false positives, missed loops, setup friction, and fixes to pri
 | Participant | Run ID | Expected behavior | Actual behavior | Flag correct? | Fix / follow-up |
 | --- | --- | --- | --- | --- | --- |
 
+Ask each participant at the end of the week:
+
+1. Which run IDs did Agent Supra flag, and was each flag useful, too early, or a false alarm?
+2. Which run IDs looked stuck to you but received no flag? What signal would have exposed the loop?
+3. Did observation mode change your agent's behavior or latency noticeably?
+4. Were model-call counts and estimated spend close enough to your provider logs to trust the dashboard?
+5. What blocked setup, and would you use the product again on this agent?
+
+Avoid collecting prompts, source code, provider keys, or private customer data in feedback.
+
 ## 60-second video shot list
 
-Record this only after a real Gemini run succeeds. Keep API keys and passwords off screen.
-The scripted demo is useful for rehearsal but must be labeled as scripted if recorded.
+The verified real Gemini runs are now represented in a 60-second captioned
+edited replay at the local ignored path `.local/demo-video/edit/final.mp4`.
+It is labeled as an edited replay throughout, uses the authentic paused-run
+dashboard screenshot and recorded attempt counts, and shows no API keys.
+Review it before sharing publicly. If recording new footage later, keep API
+keys and passwords off screen; label any scripted footage as scripted.
 
 | Time | Screen | Narration |
 | --- | --- | --- |

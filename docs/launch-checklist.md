@@ -38,7 +38,7 @@ The remaining boxes require live outage verification, launch materials, or beta 
 
 - [x] Audited the privacy page against the deployed host, database, email service, and backup retention; corrected its account-deletion claim. Final legal review remains.
 - [x] Terms page and contact email are linked from the footer. The private-beta terms still need final review before public launch.
-- [ ] Record a 60-second demo: the impossible-task run getting paused, then the dashboard.
+- [x] Produced a 60-second captioned edited replay from the verified Gemini attempts and paused dashboard, followed by the completed run and quickstart. Review the local `final.mp4` in `.local/demo-video/edit/` before publishing it.
 - [x] Public GitHub repository is connected; CI passed for the deployed commit.
 
 ## 6. Private beta (3 to 5 people, about a week)
