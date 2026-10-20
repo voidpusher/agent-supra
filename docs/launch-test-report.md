@@ -99,6 +99,14 @@ Status: **the hosted beta works end to end, but public launch is not complete**.
   PostgreSQL 16 server. The restored database had 2 users, 8 runs, schema
   version 1, 12 base tables, and the known paused Gemini run. The local
   plaintext dump and test database were removed.
+- On 20 October, a production API outage-recovery drill used a temporary key
+  and a transport that returned a simulated 503 while leaving the hosted
+  service online. Fail-open created a pending task/run, buffered the start and
+  progress events, then replayed both to the live API and completed run
+  `run_2d1352b5e64e4b8e`. Fail-closed refused the next step; after the
+  transport recovered, test run `run_df49d54d89b94a29` was stopped. The
+  temporary key was revoked in the dashboard. This verifies SDK behavior
+  against the production API after recovery, not a real Vercel outage.
 - On 19 October, the current 109-test local regression suite passed, the
   source distribution and wheel rebuilt and passed `twine check`, and the
   production `/healthz` endpoint returned `{"ok":true,"version":"1.0.0"}`.
@@ -115,8 +123,10 @@ Status: **the hosted beta works end to end, but public launch is not complete**.
   impossible run stalled after two calls and timed out; its run was stopped.
   These were provider failures, not successful supervisor tests. The stable
   3.1 Flash-Lite retry above passed the real pause test.
-- Production outage recovery has not yet been exercised against the live
-  service. Slack and email deliveries above verify the configured destinations.
+- A real hosting or database outage has not been induced. The safe simulated
+  503 drill above verifies the SDK's buffer and fail-closed behavior while
+  preserving production availability. Slack and email deliveries above verify
+  the configured destinations.
 - Because this first-party inbox uses the app database and email/Slack
   integrations, a total database or hosting outage can also interrupt error
   recording. The `production health` GitHub Actions workflow checks public

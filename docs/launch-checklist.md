@@ -15,7 +15,7 @@ The remaining boxes require live outage verification, launch materials, or beta 
 - [x] Local regression suite and synthetic supervisor flows pass.
 - [x] Live solvable and stuck Gemini runs complete and pause as expected.
 - [x] Real Slack alert and Resend email delivery are verified with configured destinations.
-- [ ] Exercise outage recovery against the production service.
+- [x] Exercise SDK outage behavior against the production API using a simulated 503: fail-open buffered and replayed events; fail-closed stopped. The service stayed online.
 
 ## 3. Deploy (docs/deploying.md)
 

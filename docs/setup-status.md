@@ -19,6 +19,8 @@ now; it contains a copy of production data.
 
 The privacy page now describes the actual processors and explains that
 recovery copies outlive deletion from the active database. Remaining launch
-work includes live outage verification, final legal review, a demo video,
+work includes final legal review, a demo video,
 and feedback from 3–5 private-beta users. See
 [launch-test-report.md](launch-test-report.md) for evidence and limitations.
+The SDK's fail-open and fail-closed paths passed a simulated 503 drill against
+the production API after recovery; no real service outage was induced.
