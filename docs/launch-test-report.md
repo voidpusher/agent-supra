@@ -1,4 +1,4 @@
-# Launch verification — 13–19 October 2026
+# Launch verification — 13–20 October 2026
 
 Status: **the hosted beta works end to end, but public launch is not complete**.
 
@@ -90,6 +90,15 @@ Status: **the hosted beta works end to end, but public launch is not complete**.
   [run #3](https://github.com/voidpusher/agent-supra/actions/runs/39300792844)
   passed with encrypted artifact `agent-supra-db-39300792844-1` (27.4 KB).
   This run verifies the credential currently configured in GitHub.
+- On 20 October, the first scheduled backup
+  [run #4](https://github.com/voidpusher/agent-supra/actions/runs/39387501599)
+  succeeded and retained encrypted artifact `agent-supra-db-39387501599-1`.
+  It started at 13:05 IST rather than the configured 07:47 IST, showing that
+  GitHub's schedule can be delayed substantially. The downloaded run #3
+  artifact was independently decrypted and restored to a disposable local
+  PostgreSQL 16 server. The restored database had 2 users, 8 runs, schema
+  version 1, 12 base tables, and the known paused Gemini run. The local
+  plaintext dump and test database were removed.
 - On 19 October, the current 109-test local regression suite passed, the
   source distribution and wheel rebuilt and passed `twine check`, and the
   production `/healthz` endpoint returned `{"ok":true,"version":"1.0.0"}`.
@@ -116,12 +125,14 @@ Status: **the hosted beta works end to end, but public launch is not complete**.
   GitHub's workflow status unless notifications are configured.
 - Neon's Free plan currently shows a six-hour point-in-time history window,
   one manual snapshot, and no snapshot schedule. The encrypted GitHub backup
-  now provides a separate recovery path, but the first scheduled run and a
-  restore of the retained artifact outside the workflow are still pending.
+  now provides a separately verified recovery path. The scheduled run was
+  over five hours late, so it does not guarantee a fixed daily recovery point.
   Keep the encryption key in a separate private recovery location. The kept restored branch
   contains a copy of production data and should be removed when no longer
   needed.
-- Terms are still labeled a private-beta draft. Final terms review, the demo
+- The privacy page was corrected to name Vercel, Neon, GitHub encrypted
+  backups, Resend, and retained recovery copies after active-account deletion.
+  Terms are still labeled a private-beta draft. Final legal review, the demo
   video, and the planned beta feedback week remain outside this technical
   verification.
 - The first live wrapper-check attempt with Gemini 3.1 Flash-Lite returned a

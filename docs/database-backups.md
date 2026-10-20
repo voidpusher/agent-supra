@@ -8,15 +8,21 @@ tables, and uploads only the encrypted archive. Each artifact is retained for
 30 days, subject to the repository's retention limit. The workflow can also be
 started from **Actions → production database backup → Run workflow**.
 
-**Current status (19 October 2026): first backup verified.** Manual
+**Current status (20 October 2026): daily backup and independent restore verified.** Manual
 [run #3](https://github.com/voidpusher/agent-supra/actions/runs/39300792844)
 passed export, AES-256-GCM encryption, decryption, isolated PostgreSQL 16
 restore, and table checks. GitHub retained encrypted artifact
 `agent-supra-db-39300792844-1`. The dedicated `agent_supra_backup_v2` login
 authenticated and had SELECT on all 13 public tables and sequences, no INSERT
 grants, and no administrative role attributes. Its password was rotated before
-run #3, and the GitHub secret was updated. The first scheduled run is still
-pending; check it at the next daily execution.
+run #3, and the GitHub secret was updated. The first scheduled
+[run #4](https://github.com/voidpusher/agent-supra/actions/runs/39387501599)
+completed successfully and retained artifact `agent-supra-db-39387501599-1`.
+It started at 13:05 IST, over five hours after the configured 07:47 IST time;
+do not rely on the schedule for an exact backup time. An independent restore of
+the downloaded run #3 artifact on a local PostgreSQL 16 server also passed:
+2 users, 8 runs, schema version 1, 12 base tables, and the known paused run.
+The disposable database and plaintext dump were removed afterward.
 
 ## Required repository secrets
 

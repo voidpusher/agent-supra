@@ -15,22 +15,23 @@
     <li>Model name and token counts for each model call.</li>
     <li>Test IDs and which ones failed, plus a code revision ID you choose (for example a git hash).</li>
     <li>Tool names, whether they succeeded, and fingerprints of their arguments and errors. A fingerprint is a keyed hash: it shows two errors were the same without revealing what they said.</li>
-    <li>Task names you give each task, and an optional outcome.</li>
+    <li>Task names you give each task, short progress notes, and an optional outcome.</li>
   </ul>
 
   <h2>What it never sends</h2>
-  <p>Your prompts, the model's replies, your source code, file contents, or your model provider API keys. Your agent calls the model provider directly.</p>
+  <p>The SDK does not automatically send your prompts, the model's replies, source code, file contents, or model provider API keys. Your agent calls the model provider directly. Do not put secrets or private content in task names, progress notes, test IDs, or other fields you supply: those fields are sent as written.</p>
 
   <h2>What we store about you</h2>
   <p>Your email address and a scrypt hash of your password. API keys and login sessions are stored only as SHA-256 hashes, so they can't be read back out of the database.</p>
 
   <h2>How long it's kept</h2>
-  <p>Run data and unexpected server-error records are deleted after {{ retention_days }} days. Error records contain an exception type, route pattern, stack locations, and occurrence times and counts; they exclude exception messages and request contents. Account details stay until you delete your account.</p>
+  <p>Run data and unexpected server-error records are removed from the active database after {{ retention_days }} days. Error records contain an exception type, route pattern, stack locations, and occurrence times and counts; they exclude exception messages and request contents. Account details stay in the active database until you delete your account.</p>
+  <p>Encrypted database backups are retained in GitHub Actions for up to 30 days. Neon recovery snapshots and isolated restored branches can retain older copies until they are deleted. Data removed from the active database can therefore remain in these recovery copies.</p>
 
   <h2>Deleting your data</h2>
-  <p>Settings, then Delete account, removes your workspace, every run and event, your API keys and your login immediately.</p>
+  <p>Settings, then Delete account, removes your workspace, runs, events, API keys, and login from the active database. Historical recovery copies are not changed immediately. Contact us to request help with data in retained backups or restored branches.</p>
 
   <h2>Who processes it</h2>
-  <p>Data is stored with this service's hosting and database provider. Run alerts go to the Slack webhook and email address you set. New server-error alerts go to the site operator's configured Slack webhook and email address.</p>
+  <p>The website runs on Vercel and its active database is hosted by Neon. Encrypted database backups are stored in GitHub Actions. Run alerts go to the Slack webhook and email address you set; email delivery uses Resend. New server-error alerts go to the site operator's configured Slack webhook and email address.</p>
 </main>
 {% endblock %}

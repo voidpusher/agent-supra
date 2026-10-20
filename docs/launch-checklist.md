@@ -1,7 +1,7 @@
 # Launch checklist
 
 Current technical status is recorded in [launch-test-report.md](launch-test-report.md).
-The remaining boxes require a recovery drill, external delivery, or beta feedback.
+The remaining boxes require live outage verification, launch materials, or beta feedback.
 
 ## 1. Name: Agent Supra (decided)
 
@@ -25,7 +25,7 @@ The remaining boxes require a recovery drill, external delivery, or beta feedbac
 - [x] External GitHub Actions health check calls production `/healthz` every 15 minutes; check the workflow run history for outages.
 - [x] Resend SMTP set; the production test alert was delivered to `sanchitp498@gmail.com`.
 - [x] Neon point-in-time recovery and a manual snapshot were each restored to an isolated branch and verified against production reference data (19 Oct 2026).
-- [x] Replaced the failed backup login with a verified read-only role and confirmed one successful encrypted GitHub Actions artifact. The next scheduled run still needs checking.
+- [x] Replaced the failed backup login with a verified read-only role; the first scheduled encrypted backup succeeded and a retained artifact restored outside GitHub Actions.
 
 ## 4. Publish the SDK
 
@@ -36,7 +36,7 @@ The remaining boxes require a recovery drill, external delivery, or beta feedbac
 
 ## 5. Before people arrive
 
-- [ ] Read the privacy page and make sure it's true for how you deployed (host, retention).
+- [x] Audited the privacy page against the deployed host, database, email service, and backup retention; corrected its account-deletion claim. Final legal review remains.
 - [x] Terms page and contact email are linked from the footer. The private-beta terms still need final review before public launch.
 - [ ] Record a 60-second demo: the impossible-task run getting paused, then the dashboard.
 - [x] Public GitHub repository is connected; CI passed for the deployed commit.
