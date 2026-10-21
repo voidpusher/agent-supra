@@ -14,6 +14,7 @@
         <input id="password" name="password" type="password" required
           {% if mode == "signup" %}minlength="10" autocomplete="new-password"{% else %}autocomplete="current-password"{% endif %}>
         {% if mode == "signup" %}<p class="hint">At least 10 characters.</p>{% endif %}</div>
+      {% if mode == "signup" %}<p class="hint">By creating an account, you agree to the <a href="/terms">private-beta terms</a>. Read how your data is handled in <a href="/privacy">Privacy</a>.</p>{% endif %}
       <button class="btn" type="submit">{{ button }}</button>
     </form>
   </div>

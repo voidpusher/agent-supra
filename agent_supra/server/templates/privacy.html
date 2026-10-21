@@ -18,11 +18,11 @@
     <li>Task names you give each task, short progress notes, and an optional outcome.</li>
   </ul>
 
-  <h2>What it never sends</h2>
+  <h2>What the SDK does not automatically send</h2>
   <p>The SDK does not automatically send your prompts, the model's replies, source code, file contents, or model provider API keys. Your agent calls the model provider directly. Do not put secrets or private content in task names, progress notes, test IDs, or other fields you supply: those fields are sent as written.</p>
 
   <h2>What we store about you</h2>
-  <p>We store your email address and a scrypt hash of your password to provide and protect your account. API keys and login sessions are stored only as SHA-256 hashes, so they can't be read back out of the database. A session cookie keeps you signed in.</p>
+  <p>We store your email address and a scrypt hash of your password to provide and protect your account. The secret values of API keys, login session tokens, and password-reset tokens are stored as hashes, so those values cannot be read back from the database. We also keep key names, prefixes and usage times, session and reset expiry times, and account creation time. A session cookie keeps you signed in; a short-lived form-security cookie helps protect login and signup forms.</p>
   <p>We also store your workspace name, supervision rules, model prices you configure, and any alert email address or Slack webhook you save. We use these settings to supervise runs, show estimated spend, and deliver the alerts you request. Anyone with access to your workspace settings can update its alert destinations, so treat a Slack webhook as a secret.</p>
 
   <h2>How long it's kept</h2>
@@ -33,7 +33,8 @@
   <p>Settings, then Delete account, removes your workspace, runs, events, API keys, settings, and login from the active database. Historical recovery copies are not changed immediately. Contact us to request help with data in retained backups or restored branches.</p>
 
   <h2>Who processes it</h2>
-  <p>The website runs on Vercel and its active database is hosted by Neon. Encrypted database backups are stored in GitHub Actions. Run alerts go to the Slack webhook and email address you set; email delivery uses Resend. New server-error alerts go to the site operator's configured Slack webhook and email address.</p>
+  <p>The website runs on Vercel and its active database is hosted by Neon. These providers may process request information, such as IP address and browser details, to deliver and protect the site. The site loads its Inter font from Google Fonts, which also receives a request from your browser. Encrypted database backups are stored in GitHub Actions.</p>
+  <p>Run alerts go to the Slack webhook and email address you set; email delivery uses Resend. New server-error alerts go to the site operator's configured Slack webhook and email address. Copies delivered to those destinations are governed by the recipients' and providers' retention settings; deleting your Agent Supra account does not remove those copies.</p>
   <h2>Questions and requests</h2>
   <p>For privacy questions, access or deletion help, or concerns about an alert destination, contact <a href="mailto:{{ contact_email }}">{{ contact_email }}</a>.</p>
 </main>
