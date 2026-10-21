@@ -39,6 +39,9 @@ manual **recover encrypted database backup** workflow can decrypt a retained
 artifact on a disposable GitHub runner. This provides a laptop-loss recovery
 path without displaying the secret. It still depends on access to this GitHub
 repository and its intact secret; it is not an independent copy of the key.
+The first [verify-only recovery run](https://github.com/voidpusher/agent-supra/actions/runs/39547513240)
+passed on 21 October 2026 using scheduled backup run #4. The optional restore
+to a separate Neon recovery database has not yet been exercised.
 
 Both secrets must be added under the `voidpusher/agent-supra` repository's
 **Settings → Secrets and variables → Actions**. Never put either value in Git,
