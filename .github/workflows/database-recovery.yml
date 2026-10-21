@@ -1,0 +1,123 @@
+name: recover encrypted database backup
+
+on:
+  workflow_dispatch:
+    inputs:
+      backup_run_id:
+        description: Successful production database backup run ID
+        required: true
+        type: string
+      backup_run_attempt:
+        description: Run attempt containing the artifact
+        required: true
+        default: "1"
+        type: string
+      mode:
+        description: Verify on a disposable runner, or restore to an empty recovery database
+        required: true
+        default: verify-only
+        type: choice
+        options:
+          - verify-only
+          - restore-to-recovery-db
+
+permissions:
+  actions: read
+  contents: read
+
+concurrency:
+  group: production-database-recovery
+  cancel-in-progress: false
+
+jobs:
+  recover:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    services:
+      restore_check:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: restore-check
+          POSTGRES_DB: restore_check
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d restore_check"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install restore tools
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y postgresql-client-16
+          python -m pip install 'cryptography==50.0.2'
+      - name: Download the selected encrypted artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: agent-supra-db-${{ inputs.backup_run_id }}-${{ inputs.backup_run_attempt }}
+          path: ${{ runner.temp }}/agent-supra-backup
+          github-token: ${{ github.token }}
+          repository: ${{ github.repository }}
+          run-id: ${{ inputs.backup_run_id }}
+      - name: Decrypt on the disposable runner
+        env:
+          BACKUP_ENCRYPTION_KEY: ${{ secrets.BACKUP_ENCRYPTION_KEY }}
+        run: |
+          set -euo pipefail
+          test -n "$BACKUP_ENCRYPTION_KEY"
+          umask 077
+          python scripts/backup_archive.py decrypt \
+            "$RUNNER_TEMP/agent-supra-backup/backup.dump.enc" \
+            "$RUNNER_TEMP/recovered.dump"
+          pg_restore --list "$RUNNER_TEMP/recovered.dump" >/dev/null
+      - name: Check the restore destination
+        env:
+          MODE: ${{ inputs.mode }}
+          RECOVERY_DATABASE_URL: ${{ secrets.RECOVERY_DATABASE_URL }}
+        run: |
+          set -euo pipefail
+          if [ "$MODE" = "verify-only" ]; then
+            exit 0
+          fi
+          test "$MODE" = "restore-to-recovery-db"
+          if [ -z "$RECOVERY_DATABASE_URL" ]; then
+            echo 'Set the RECOVERY_DATABASE_URL repository secret to a newly created, empty agent_supra_recovery database on an isolated Neon branch.' >&2
+            exit 1
+          fi
+          database_name="$(psql "$RECOVERY_DATABASE_URL" -XAt -v ON_ERROR_STOP=1 -c 'SELECT current_database()')"
+          if [ "$database_name" != 'agent_supra_recovery' ]; then
+            echo 'Refusing restore: destination database must be named agent_supra_recovery.' >&2
+            exit 1
+          fi
+          table_count="$(psql "$RECOVERY_DATABASE_URL" -XAt -v ON_ERROR_STOP=1 -c "SELECT count(*) FROM pg_catalog.pg_class c JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace WHERE n.nspname = 'public' AND c.relkind IN ('r', 'p')")"
+          if [ "$table_count" != '0' ]; then
+            echo 'Refusing restore: recovery database already contains tables.' >&2
+            exit 1
+          fi
+          echo 'Recovery destination is isolated and empty.'
+      - name: Restore and verify
+        env:
+          MODE: ${{ inputs.mode }}
+          RECOVERY_DATABASE_URL: ${{ secrets.RECOVERY_DATABASE_URL }}
+          PGPASSWORD: restore-check
+        run: |
+          set -euo pipefail
+          if [ "$MODE" = 'verify-only' ]; then
+            target_url='postgresql://postgres:restore-check@localhost:5432/restore_check'
+          else
+            target_url="$RECOVERY_DATABASE_URL"
+          fi
+          pg_restore --exit-on-error --no-owner --no-privileges \
+            --dbname="$target_url" "$RUNNER_TEMP/recovered.dump"
+          test "$(psql "$target_url" -XAt -v ON_ERROR_STOP=1 -c "SELECT to_regclass('public.users') IS NOT NULL AND to_regclass('public.runs') IS NOT NULL AND to_regclass('public.schema_info') IS NOT NULL")" = t
+          if [ "$MODE" = 'verify-only' ]; then
+            echo 'Encrypted backup restored successfully to the disposable runner.'
+          else
+            echo 'Encrypted backup restored successfully to the isolated recovery database.'
+          fi
+      - name: Remove decrypted dump
+        if: always()
+        run: rm -f "$RUNNER_TEMP/recovered.dump"

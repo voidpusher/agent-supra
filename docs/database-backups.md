@@ -34,6 +34,12 @@ The disposable database and plaintext dump were removed afterward.
   private recovery copy; GitHub will not show a secret's value after saving it.
   Losing this key makes the archived backups unreadable.
 
+If the original key file is lost but the GitHub repository secret remains, the
+manual **recover encrypted database backup** workflow can decrypt a retained
+artifact on a disposable GitHub runner. This provides a laptop-loss recovery
+path without displaying the secret. It still depends on access to this GitHub
+repository and its intact secret; it is not an independent copy of the key.
+
 Both secrets must be added under the `voidpusher/agent-supra` repository's
 **Settings → Secrets and variables → Actions**. Never put either value in Git,
 issue comments, workflow logs, or a deployment URL. The workflow requests only
@@ -49,8 +55,27 @@ the latest 30-day artifact expires. GitHub schedules can be delayed and may be
 disabled after repository inactivity, so they are not a precise recovery-time
 guarantee.
 
-To recover, download an encrypted artifact from a successful workflow run.
-On a trusted computer with `BACKUP_ENCRYPTION_KEY` in the environment, run:
+For a recovery without the local key file, open **Actions → recover encrypted
+database backup → Run workflow**. Enter the numeric ID of a successful
+**production database backup** run and its run attempt (usually `1`). Choose
+`verify-only` first. The workflow downloads that run's encrypted artifact,
+decrypts it with the existing GitHub secret, restores it into a disposable
+PostgreSQL 16 service, checks the core tables, and removes the plaintext dump.
+It does not publish a plaintext artifact.
+
+To restore into Neon, first create a **new, isolated branch** and an **empty**
+database named `agent_supra_recovery` on that branch. Set a repository Actions
+secret named `RECOVERY_DATABASE_URL` to that database's connection URL using a
+login with restore privileges. Then run the same workflow with mode
+`restore-to-recovery-db`. The workflow refuses any other database name or a
+database containing public tables. It never points at the live `agent_supra`
+database. Inspect the recovered data before separately deciding whether to
+switch the application to it. Remove the temporary recovery URL secret when
+the drill or incident is over.
+
+For manual offline recovery, download an encrypted artifact from a successful
+workflow run. On a trusted computer with `BACKUP_ENCRYPTION_KEY` in the
+environment, run:
 
 ```bash
 python scripts/backup_archive.py decrypt backup.dump.enc recovered.dump
