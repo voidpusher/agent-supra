@@ -106,11 +106,11 @@ All server settings are environment variables. See [`.env.example`](.env.example
 
 ## Deploying
 
-See [docs/deploying.md](docs/deploying.md). Short version: push to GitHub, create a Render Blueprint from `render.yaml`, set `BASE_URL`.
+See [docs/deploying.md](docs/deploying.md). The hosted beta runs on Vercel with Neon Postgres at [agentsupra.in](https://agentsupra.in).
 
 ## Security
 
-- Passwords: scrypt. API keys and sessions: stored only as SHA-256 hashes; keys are shown once.
+- Passwords: scrypt. API key and session secrets are stored as SHA-256 hashes; API keys are shown once.
 - Every API request is scoped to the key's workspace; another workspace's runs return 404.
 - Dashboard forms are CSRF-protected; cookies are HttpOnly and SameSite.
 - Rate limits on events and on login/sign-up; request size limits; strict security headers.
@@ -121,7 +121,7 @@ See [docs/deploying.md](docs/deploying.md). Short version: push to GitHub, creat
 
 ```bash
 pip install -e ".[dev]"
-python -m pytest                                  # 84 tests on SQLite
+python -m pytest                                  # SQLite test suite
 TEST_DATABASE_URL=postgresql+psycopg://user:pass@localhost/test python -m pytest   # on Postgres
 ```
 

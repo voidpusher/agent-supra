@@ -190,6 +190,17 @@ class Supervisor:
                     data[key] = max(0, int(data.get(key) or 0))
                 except (TypeError, ValueError):
                     raise SupervisorError(f"'{key}' must be an integer")
+            cost = data.get("cost_micros")
+            if cost is not None:
+                if isinstance(cost, bool) or not (
+                    isinstance(cost, int) or
+                    (isinstance(cost, str) and cost.isascii() and cost.isdecimal() and len(cost) <= 19)
+                ):
+                    raise SupervisorError("'cost_micros' must be a non-negative integer")
+                cost = int(cost)
+                if cost < 0 or cost > 2**63 - 1:
+                    raise SupervisorError("'cost_micros' must be a non-negative 64-bit integer")
+                data["cost_micros"] = cost
         encoded = json.dumps(data)
         if len(encoded) > MAX_EVENT_BYTES:
             raise SupervisorError(f"event data is larger than {MAX_EVENT_BYTES} bytes")

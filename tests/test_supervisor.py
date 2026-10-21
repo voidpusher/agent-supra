@@ -79,6 +79,19 @@ def test_duplicate_event_delivery_is_ignored(supervisor):
     assert sup.task_spend(task)["calls"] == 1
 
 
+@pytest.mark.parametrize("cost", ["invalid", -1, 1.5, True, 2**63])
+def test_invalid_model_cost_is_rejected_without_recording_a_call(supervisor, cost):
+    task = supervisor.create_task("fix")
+    run_id = supervisor.create_run(task)
+    event = {"event_id": "bad-cost", "seq": 1, "type": "model.call",
+             "data": {"model": "demo-model", "input_tokens": 10,
+                      "output_tokens": 1, "cost_micros": cost}}
+    with pytest.raises(SupervisorError, match="cost_micros"):
+        supervisor.ingest(run_id, event)
+    assert supervisor.task_spend(task)["calls"] == 0
+    assert supervisor.events(run_id) == []
+
+
 def test_budget_is_shared_by_child_runs(supervisor):
     sup = supervisor
     task = sup.create_task("fix", budget_usd=1.0)

@@ -22,8 +22,8 @@ The current hosted beta runs on Vercel with Neon Postgres at
    Settings test alert and confirm it arrives. Unexpected 500 errors appear in
    the operator-only `/app/errors` inbox and alert on first occurrence.
 
-The SDK is currently installed from the public GitHub repository; publish it to
-PyPI and change the site's install command only after a fresh install succeeds.
+The SDK is published on PyPI as `agent-supra`; the hosted quickstart uses
+`pip install agent-supra`.
 
 ## Docker host (alternative)
 
