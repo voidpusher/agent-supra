@@ -14,15 +14,20 @@ Subject: Try Agent Supra with one of your AI agents
 
 Hi,
 
-I'm testing Agent Supra, which detects when an agent keeps trying without making progress.
-Would you try it on one of your agents for a week? Start in observation mode so it flags
-suspected loops while your agent keeps running. Provider charges and your configured budget
-limits still apply.
+I'm inviting you to a small private beta of Agent Supra. It watches AI agents for repeated
+attempts without progress and shows the evidence behind each flag.
 
-I'll send the working signup link and quickstart once the deployment checks are complete.
-I'd especially like feedback on false alarms and loops it missed. Please send the run ID,
-what the agent was doing, and whether you think the flag was right. Avoid sending secrets
-or private source code.
+Would you try it with one Python agent over the next week? Create an account at
+https://agentsupra.in/signup, then follow https://agentsupra.in/docs/quickstart.
+New workspaces start in observation mode, so loop rules flag runs for review;
+budget and call caps can still pause a run. The beta service is free, but your
+model provider's charges still apply.
+
+Please reply with the run IDs, which flags were right or false alarms, any stuck
+runs it missed, and anything that made setup difficult. Leave provider keys,
+prompts, private code, and customer data out of your reply and run names.
+Please review https://agentsupra.in/terms and https://agentsupra.in/privacy
+before signing up.
 
 Thanks,
 Sanchit
