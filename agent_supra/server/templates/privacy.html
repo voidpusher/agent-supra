@@ -8,7 +8,7 @@
 </div></header>
 <main class="wrap prose doc">
   <h1>Privacy</h1>
-  <p class="muted">What {{ app_name }} stores, why, and how to delete it.</p>
+  <p class="muted">Updated 21 October 2026 · What {{ app_name }} stores, why, and how to delete it.</p>
 
   <h2>What the SDK sends</h2>
   <ul>
@@ -22,16 +22,19 @@
   <p>The SDK does not automatically send your prompts, the model's replies, source code, file contents, or model provider API keys. Your agent calls the model provider directly. Do not put secrets or private content in task names, progress notes, test IDs, or other fields you supply: those fields are sent as written.</p>
 
   <h2>What we store about you</h2>
-  <p>Your email address and a scrypt hash of your password. API keys and login sessions are stored only as SHA-256 hashes, so they can't be read back out of the database.</p>
+  <p>We store your email address and a scrypt hash of your password to provide and protect your account. API keys and login sessions are stored only as SHA-256 hashes, so they can't be read back out of the database. A session cookie keeps you signed in.</p>
+  <p>We also store your workspace name, supervision rules, model prices you configure, and any alert email address or Slack webhook you save. We use these settings to supervise runs, show estimated spend, and deliver the alerts you request. Anyone with access to your workspace settings can update its alert destinations, so treat a Slack webhook as a secret.</p>
 
   <h2>How long it's kept</h2>
   <p>Run data and unexpected server-error records are removed from the active database after {{ retention_days }} days. Error records contain an exception type, route pattern, stack locations, and occurrence times and counts; they exclude exception messages and request contents. Account details stay in the active database until you delete your account.</p>
   <p>Encrypted database backups are retained in GitHub Actions for up to 30 days. Neon recovery snapshots and isolated restored branches can retain older copies until they are deleted. Data removed from the active database can therefore remain in these recovery copies.</p>
 
   <h2>Deleting your data</h2>
-  <p>Settings, then Delete account, removes your workspace, runs, events, API keys, and login from the active database. Historical recovery copies are not changed immediately. Contact us to request help with data in retained backups or restored branches.</p>
+  <p>Settings, then Delete account, removes your workspace, runs, events, API keys, settings, and login from the active database. Historical recovery copies are not changed immediately. Contact us to request help with data in retained backups or restored branches.</p>
 
   <h2>Who processes it</h2>
   <p>The website runs on Vercel and its active database is hosted by Neon. Encrypted database backups are stored in GitHub Actions. Run alerts go to the Slack webhook and email address you set; email delivery uses Resend. New server-error alerts go to the site operator's configured Slack webhook and email address.</p>
+  <h2>Questions and requests</h2>
+  <p>For privacy questions, access or deletion help, or concerns about an alert destination, contact <a href="mailto:{{ contact_email }}">{{ contact_email }}</a>.</p>
 </main>
 {% endblock %}
