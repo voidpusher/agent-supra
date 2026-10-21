@@ -37,6 +37,10 @@ Sign up, create an API key, then follow the quickstart at `/docs/quickstart`.
 
 ## Connect an agent
 
+The following shows where supervision fits into your own agent loop; provide
+your own `prompt`, `apply_fix`, `run_tests`, and `git_rev` functions. For a
+copy-paste first-run check, use the [hosted quickstart](https://agentsupra.in/docs/quickstart).
+
 ```python
 from google import genai
 from agent_supra import Client, SupervisedRun, SupervisorPaused

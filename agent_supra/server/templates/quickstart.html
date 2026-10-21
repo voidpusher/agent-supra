@@ -8,17 +8,28 @@
 </div></header>
 <main class="wrap prose doc">
   <h1>Quickstart</h1>
-  <p class="muted">Connect an agent in about ten minutes. The examples use Gemini; OpenAI and Anthropic are further down.</p>
+  <p class="muted">Create a first run in a few minutes, then connect your agent. Gemini, OpenAI and Anthropic are supported.</p>
 
   <h2>1. Get an API key</h2>
   <p>{% if session %}<a href="/app/keys">Create a key</a>{% else %}<a href="/signup">Create an account</a>, then create a key{% endif %} and set it in your environment:</p>
 <pre class="snippet">pip install agent-supra
-pip install google-genai
 export AGENT_SUPRA_API_KEY="as_live_…"
 export AGENT_SUPRA_URL="{{ base_url }}"</pre>
+  <p>On Windows PowerShell, use <code>$env:AGENT_SUPRA_API_KEY="as_live_…"</code> and <code>$env:AGENT_SUPRA_URL="{{ base_url }}"</code> instead of <code>export</code>.</p>
 
-  <h2>2. Wrap your agent</h2>
-  <p>Create a task with a budget, wrap your model client, and report each test run. <code>rev</code> is anything that changes when the code changes, such as a git commit hash or a hash of the edited files.</p>
+  <h2>2. Verify your first run</h2>
+  <p>Save this as <code>first_run.py</code> and run <code>python first_run.py</code>. It needs only your Agent Supra key and should show a completed run in your dashboard.</p>
+<pre class="snippet">from agent_supra import Client, SupervisedRun
+
+sup = Client()
+task = sup.create_task("First Agent Supra run")
+with SupervisedRun(sup, task) as run:
+    run.report_tests(["smoke"], [], rev="first-run")
+    run.finish("success")
+    print("Completed run:", run.run_id)</pre>
+
+  <h2>3. Wrap your agent</h2>
+  <p>Install <code>google-genai</code> and set <code>GEMINI_API_KEY</code> for Gemini. The following is an integration outline: replace <code>prompt</code>, <code>apply_fix</code>, <code>run_tests</code> and <code>git_rev</code> with your agent's own functions. <code>rev</code> should change when the code changes, such as a git commit hash or a hash of edited files. For a runnable end-to-end example, see <a href="https://github.com/voidpusher/agent-supra/blob/main/examples/gemini_agent.py">gemini_agent.py</a>.</p>
 <pre class="snippet">from google import genai
 from agent_supra import Client, SupervisedRun, SupervisorPaused
 
@@ -41,7 +52,7 @@ with SupervisedRun(sup, task) as run:
     except SupervisorPaused as paused:
         print("Paused:", paused.reason)       # don't retry; review it in the dashboard</pre>
 
-  <h2>3. Watch it in observation mode</h2>
+  <h2>4. Watch it in observation mode</h2>
   <p>New workspaces start in observation mode: runs are flagged, never paused, while you check the flags are right. Budgets and call caps are enforced from the start. When you trust the rules, turn observation mode off in <a href="/app/settings">Settings</a> and add a Slack webhook so you hear about pauses.</p>
 
   <h2>Other model clients</h2>
@@ -65,5 +76,6 @@ run.record_model_call("my-model", input_tokens=1200, output_tokens=300)</pre>
 
   <h2>What gets sent</h2>
   <p>Token counts, model names, test IDs with pass or fail, code revision IDs, and keyed fingerprints of tool arguments and errors. Prompts, replies and code are never sent. See <a href="/privacy">Privacy</a>.</p>
+  <p>Found something that does not match this guide? <a href="https://github.com/voidpusher/agent-supra/issues">Report it on GitHub</a> or use the contact link below. Keep API keys, prompts and private code out of public issues.</p>
 </main>
 {% endblock %}
