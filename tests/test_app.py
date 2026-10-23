@@ -32,7 +32,7 @@ def test_public_pages_render(server):
         assert r.status_code == 200, path
         assert "Content-Security-Policy" in r.headers
         assert r.headers["X-Frame-Options"] == "DENY"
-    assert "Create a free account" in server.get("/").text
+    assert "Start free" in server.get("/").text
 
 
 def test_healthz(server):

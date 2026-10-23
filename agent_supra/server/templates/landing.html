@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block title %}{{ app_name }}: stop paying for agents that are stuck{% endblock %}
-{% block head %}<meta name="description" content="{{ app_name }} notices when an unattended AI agent stops making progress, pauses it, and shows you why.">{% endblock %}
+{% block head %}<meta name="description" content="{{ app_name }} notices when an unattended AI agent stops making progress, flags it with evidence, and can pause the next step."><script src="/static/landing.js" defer></script>{% endblock %}
 {% block body_class %}landing{% endblock %}
 {% block body %}
 <header>
@@ -16,26 +16,34 @@
 </header>
 
 <main class="wrap">
-  <section class="hero">
-    <div>
-      <p class="eyebrow">Progress intelligence for AI agents</p>
-      <h1>Your agent tried the same fix four times. Nobody was watching.</h1>
-      <p class="lede">{{ app_name }} watches unattended AI agents, notices when they stop making progress, and pauses them before more money goes into a loop. You get the evidence, not a guess.</p>
-      <div class="actions">
-        {% if allow_signup %}<a class="btn" href="/signup">Create a free account</a>{% endif %}
-        <a class="btn quiet" href="/docs/quickstart">Read the quickstart</a>
+  <section class="showcase" aria-labelledby="showcase-title">
+    <div class="stage-art" aria-hidden="true"></div>
+    <div class="showcase-copy">
+      <p class="eyebrow">The control layer for AI agents</p>
+      <h1 id="showcase-title">Let agents run.<br><span>Stay in control.</span></h1>
+      <p class="showcase-lede">{{ app_name }} watches whether your agent is making progress. It flags loops with evidence and, when you opt in, pauses the next step before more time and money disappear.</p>
+      <div class="actions showcase-actions">
+        {% if allow_signup %}<a class="btn" href="/signup">Start free <span aria-hidden="true">↗</span></a>{% endif %}
+        <a class="btn quiet" href="/docs/quickstart">See how it works <span aria-hidden="true">↗</span></a>
       </div>
     </div>
 
-    <figure class="trace" aria-label="Example: an agent's attempts while fixing a failing test">
-      <div class="trace-head"><span>Task: fix apply_discount</span><span class="model">gemini-3.5-flash-lite</span></div>
-      <div class="trace-row"><span class="n">1</span><span class="hash">951b120</span><span class="fail">ten_percent, full_discount</span><span class="cost">$0.006</span></div>
-      <div class="trace-row same"><span class="n">2</span><span class="hash">861b417</span><span class="fail">ten_percent, full_discount</span><span class="cost">$0.008</span></div>
-      <div class="trace-row same"><span class="n">3</span><span class="hash">377736e</span><span class="fail">ten_percent, full_discount</span><span class="cost">$0.011</span></div>
-      <div class="trace-row same"><span class="n">4</span><span class="hash">6016d2c</span><span class="fail">ten_percent, full_discount</span><span class="cost">$0.014</span></div>
-      <div class="trace-stop"><strong>Paused.</strong> Same 2 tests failing on 4 attempts, across 4 different versions of the code. No more model calls until you decide.</div>
-      <figcaption>Each row is one attempt: code version, failing tests, cost.</figcaption>
-    </figure>
+    <div class="showcase-stage" aria-label="Illustration of observation and pause modes, based on a verified Gemini run">
+      <div class="orbit-note orbit-note-left"><span>01 / AUTONOMY</span><p>Room to explore.<br>A reason to keep going.</p></div>
+      <div class="orbit-note orbit-note-right"><span>02 / AWARENESS</span><p>Every attempt leaves<br>a signal. We listen.</p></div>
+      <div class="signal-card signal-card-progress">
+        <span class="signal-kicker">01 / THE SIGNAL</span>
+        <strong>1 → 4 → 1 → 3</strong>
+        <span>Failing tests across four attempts. No new best result.</span>
+      </div>
+      <div class="signal-card signal-card-pause">
+        <span class="signal-kicker">02 / THE RESPONSE</span>
+        <strong><span class="pause-indicator" aria-hidden="true"></span><span data-demo-state>Paused</span></strong>
+        <span data-demo-description>Further supervised steps wait for you to decide.</span>
+      </div>
+      <div class="mode-demo" hidden><span>EXPLORE THE CONCEPT</span><div class="mode-switch" role="group" aria-label="Illustrated supervision mode"><button type="button" data-mode="observe" aria-pressed="false">Observe</button><button type="button" data-mode="pause" aria-pressed="true">Pause mode</button></div></div>
+      <div class="stage-caption"><span>THE LOOP. THE SIGNAL. THE WAY FORWARD.</span><span>ILLUSTRATION · BASED ON A VERIFIED GEMINI RUN</span></div>
+    </div>
   </section>
 
   <section class="band">
