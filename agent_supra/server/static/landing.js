@@ -11,10 +11,45 @@ if (scene && demo) {
     buttons.forEach(item => item.setAttribute('aria-pressed', String(item === button)));
     state.textContent = observing ? 'Flagged' : 'Paused';
     description.textContent = observing
-      ? 'The signal is recorded. Your agent continues running.'
-      : 'Further supervised steps wait for you to decide.';
+      ? 'Evidence recorded. Your agent keeps running.'
+      : 'The next step waits for your decision.';
   }));
   state.parentElement.setAttribute('aria-live', 'polite');
+}
+const video = document.querySelector('.hero-video');
+const motionToggle = document.querySelector('.motion-toggle');
+if (video && motionToggle) {
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  const saveData = Boolean(navigator.connection?.saveData);
+  let manuallyPaused = false;
+  let visible = true;
+  const syncPlayback = () => {
+    if (reducedMotion.matches || saveData || manuallyPaused || !visible || document.hidden) {
+      video.pause();
+      motionToggle.hidden = reducedMotion.matches || saveData || !video.currentSrc;
+      return;
+    }
+    if (!video.getAttribute('src')) video.src = video.dataset.src;
+    video.play().catch(() => { motionToggle.hidden = true; });
+  };
+  video.addEventListener('playing', () => { motionToggle.hidden = false; });
+  video.addEventListener('error', () => { motionToggle.hidden = true; });
+  motionToggle.addEventListener('click', () => {
+    manuallyPaused = !manuallyPaused;
+    motionToggle.textContent = manuallyPaused ? 'Play motion' : 'Pause motion';
+    motionToggle.setAttribute('aria-pressed', String(manuallyPaused));
+    syncPlayback();
+  });
+  reducedMotion.addEventListener('change', syncPlayback);
+  document.addEventListener('visibilitychange', syncPlayback);
+  if ('IntersectionObserver' in window) {
+    new IntersectionObserver(entries => {
+      visible = entries[0].isIntersecting;
+      syncPlayback();
+    }).observe(scene);
+  } else {
+    syncPlayback();
+  }
 }
 if ('IntersectionObserver' in window) {
   const reveal = new IntersectionObserver(entries => {

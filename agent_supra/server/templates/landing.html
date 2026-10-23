@@ -17,11 +17,11 @@
 
 <main class="wrap">
   <section class="showcase" aria-labelledby="showcase-title">
-    <div class="stage-art" aria-hidden="true"></div>
+    <div class="stage-art" aria-hidden="true"><video class="hero-video" muted loop playsinline preload="none" data-src="/static/hero-orbit-loop.mp4" poster="/static/hero-orbit.png" tabindex="-1"></video></div>
     <div class="showcase-copy">
       <p class="eyebrow">The control layer for AI agents</p>
       <h1 id="showcase-title">Let agents run.<br><span>Stay in control.</span></h1>
-      <p class="showcase-lede">{{ app_name }} watches whether your agent is making progress. It flags loops with evidence and, when you opt in, pauses the next step before more time and money disappear.</p>
+      <p class="showcase-lede">Spot stuck agents. See the evidence.<br>Pause the next step when you choose.</p>
       <div class="actions showcase-actions">
         {% if allow_signup %}<a class="btn" href="/signup">Start free <span aria-hidden="true">↗</span></a>{% endif %}
         <a class="btn quiet" href="/docs/quickstart">See how it works <span aria-hidden="true">↗</span></a>
@@ -29,37 +29,35 @@
     </div>
 
     <div class="showcase-stage" aria-label="Illustration of observation and pause modes, based on a verified Gemini run">
-      <div class="orbit-note orbit-note-left"><span>01 / AUTONOMY</span><p>Room to explore.<br>A reason to keep going.</p></div>
-      <div class="orbit-note orbit-note-right"><span>02 / AWARENESS</span><p>Every attempt leaves<br>a signal. We listen.</p></div>
       <div class="signal-card signal-card-progress">
-        <span class="signal-kicker">01 / THE SIGNAL</span>
+        <span class="signal-kicker">FAILING TESTS</span>
         <strong>1 → 4 → 1 → 3</strong>
-        <span>Failing tests across four attempts. No new best result.</span>
+        <span>Four attempts. No new best result.</span>
       </div>
       <div class="signal-card signal-card-pause">
-        <span class="signal-kicker">02 / THE RESPONSE</span>
+        <span class="signal-kicker">SUPERVISOR</span>
         <strong><span class="pause-indicator" aria-hidden="true"></span><span data-demo-state>Paused</span></strong>
-        <span data-demo-description>Further supervised steps wait for you to decide.</span>
+        <span data-demo-description>The next step waits for your decision.</span>
       </div>
-      <div class="mode-demo" hidden><span>EXPLORE THE CONCEPT</span><div class="mode-switch" role="group" aria-label="Illustrated supervision mode"><button type="button" data-mode="observe" aria-pressed="false">Observe</button><button type="button" data-mode="pause" aria-pressed="true">Pause mode</button></div></div>
-      <div class="stage-caption"><span>THE LOOP. THE SIGNAL. THE WAY FORWARD.</span><span>ILLUSTRATION · BASED ON A VERIFIED GEMINI RUN</span></div>
+      <div class="mode-demo" hidden><div class="mode-switch" role="group" aria-label="Illustrated supervision mode"><button type="button" data-mode="observe" aria-pressed="false">Observe</button><button type="button" data-mode="pause" aria-pressed="true">Pause mode</button></div></div>
+      <div class="stage-caption"><span>Illustrated run · Real Gemini test results</span><button class="motion-toggle" type="button" aria-pressed="false" hidden>Pause motion</button></div>
     </div>
   </section>
 
   <section class="band">
-    <h2>A spend cap can't tell stuck from busy</h2>
-    <p class="intro">An agent working through a hard bug and an agent going in circles both just look like money being spent. {{ app_name }} watches what each attempt achieved, so a run that's making progress keeps going, and a run that isn't gets stopped with an explanation.</p>
+    <h2>Know when progress stops.</h2>
+    <p class="intro">Track results across attempts. Start with observation, then enable pauses when you're ready.</p>
     <ol class="steps">
-      <li><h3>Install the SDK</h3><p class="muted"><code>pip install agent-supra</code>. The SDK has no dependencies and works with Gemini, OpenAI and Anthropic clients. Install your model provider's client separately.</p></li>
-      <li><h3>Wrap your agent</h3><p class="muted">Wrap your model client, then report each test run. A few lines in the loop you already have.</p></li>
-      <li><h3>Review what it catches</h3><p class="muted">Start in observation mode. When the flags look right, let it pause runs, and get a Slack message when it does.</p></li>
+      <li><h3>Install</h3><p class="muted"><code>pip install agent-supra</code><br>Works with Gemini, OpenAI and Anthropic.</p></li>
+      <li><h3>Connect</h3><p class="muted">Wrap your model client and report test results from your agent's loop.</p></li>
+      <li><h3>Stay informed</h3><p class="muted">Review evidence in your dashboard. Get alerts in Slack or email.</p></li>
     </ol>
   </section>
 
   <section class="band split">
     <div>
       <h2>What it watches for</h2>
-      <p class="intro">Plain rules you can read, not a second AI guessing. Each one can pause, only flag, or be switched off.</p>
+      <p class="intro">Readable rules. Choose which ones flag, pause, or stay off.</p>
       <div class="panel rules">
         <div><h3>No progress</h3><p>The same tests keep failing while the agent keeps changing the code.</p></div>
         <div><h3>Exact repeats</h3><p>The same failure again with nothing changed, or the same tool failing the same way.</p></div>
@@ -69,9 +67,9 @@
       </div>
     </div>
     <div>
-      <h2>Add it to a Gemini agent</h2>
-      <p class="intro">Anthropic and OpenAI clients work the same way.</p>
-<div class="panel"><pre class="snippet">from google import genai
+      <h2>Fits your existing agent.</h2>
+      <p class="intro">Use your own model client and API keys.</p>
+<details class="panel code-example"><summary>View a Gemini example <span aria-hidden="true">+</span></summary><pre class="snippet">from google import genai
 from agent_supra import (
     Client, SupervisedRun, SupervisorPaused)
 
@@ -95,18 +93,19 @@ with SupervisedRun(sup, task) as run:
                 run.finish("success")
                 break
     except SupervisorPaused as paused:
-        print(paused.reason)</pre></div>
+        print(paused.reason)</pre></details>
+      <a class="integration-link" href="/docs/quickstart">Read the quickstart <span aria-hidden="true">↗</span></a>
     </div>
   </section>
 
   <section class="band split">
     <div class="panel">
       <h2>What it stores</h2>
-      <p class="muted flush">Token counts, test names, pass or fail, and fingerprints of tool arguments and errors. Not your prompts, not the model's replies, not your code. API keys are stored only as hashes. <a href="/privacy">Read the privacy page</a>.</p>
+      <p class="muted flush">Test results, token counts and fingerprints. Your prompts, code and model replies stay out. <a href="/privacy">Privacy details</a>.</p>
     </div>
     <div class="panel">
       <h2>Free while in beta</h2>
-      <p class="muted flush">You keep paying your model provider directly with your own keys. {{ app_name }} never sees those keys. If paid plans come later, you'll hear about them well before anything changes.</p>
+      <p class="muted flush">Agent Supra is free during beta. Model usage is billed separately by your provider.</p>
     </div>
   </section>
 </main>
