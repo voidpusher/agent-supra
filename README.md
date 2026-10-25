@@ -41,6 +41,11 @@ For Claude Code, try the [experimental hook integration](docs/claude-code.md).
 It tracks tool/test activity and can deny the next tool call when paused.
 It requires the current source installation; model spend is not measured by hooks.
 
+For any existing command, try [CLI watch](docs/cli-watch.md):
+`agent-supra watch --junit ".local/results.xml" -- python my_agent.py`.
+Observation is the default; opt-in enforcement cancels the owned process tree on
+pause. The agent must generate the selected JUnit report for progress detection.
+
 The following shows where supervision fits into your own agent loop; provide
 your own `prompt`, `apply_fix`, `run_tests`, and `git_rev` functions. For a
 copy-paste first-run check, use the [hosted quickstart](https://agentsupra.in/docs/quickstart).

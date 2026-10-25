@@ -83,6 +83,14 @@ with the fifth tool denied, and five unblocked observation attempts. The three-u
 setup trial and outside-usage gate remain open; these internal fixtures do not
 count as external adoption.
 
+[CLI watch](cli-watch.md) now launches an existing command, reads fresh JUnit
+reports and updates a dashboard run with private replayable delivery. Observation
+is the default; enforcement cancels the owned process tree on pause. Native
+Windows CLI/API/pytest, early Stop and grandchild cancellation checks pass.
+Generic process suspension/resume, native macOS/Linux validation, provider spend
+tracking and the three-user setup trial remain open. Provider proxy is the next
+integration item; these internal tests still do not satisfy external adoption gates.
+
 1. After Phase 0: Claude Code hooks first, then CLI watch, provider proxy, framework
    adapters and test-output parsers. Validate setup under 5 minutes with 3 new users.
    Consult current official hook/API docs when implementation starts.

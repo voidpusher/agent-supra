@@ -61,6 +61,9 @@ def main(argv: list[str] | None = None) -> int:
     if argv[:1] == ["claude-hook"]:
         from .claude_hook import main as hook_main
         return hook_main(argv[1:])
+    if argv[:1] == ["watch"]:
+        from .watch import main as watch_main
+        return watch_main(argv[1:])
     parser = argparse.ArgumentParser(prog="agent-supra", description="Agent Supra server tools")
     sub = parser.add_subparsers(dest="command", required=True)
 
@@ -83,6 +86,7 @@ def main(argv: list[str] | None = None) -> int:
 
     sub.add_parser("demo", help="run the two-agent demo locally (try: agent-supra demo --help)")
     sub.add_parser("claude-hook", help="receive a Claude Code hook payload on stdin")
+    sub.add_parser("watch", help="supervise a command (try: agent-supra watch --help)")
 
     args = parser.parse_args(argv)
     return args.fn(args)
