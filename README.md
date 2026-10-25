@@ -46,6 +46,12 @@ For any existing command, try [CLI watch](docs/cli-watch.md):
 Observation is the default; opt-in enforcement cancels the owned process tree on
 pause. The agent must generate the selected JUnit report for progress detection.
 
+For Chat Completions clients, the [local provider proxy](docs/provider-proxy.md)
+adds token/call accounting and estimated-spend checks by changing the client base
+URL. It supports text and streaming, stays on loopback, and requires current
+source with the `proxy` extra. Monetary limits are estimated thresholds; one
+in-flight request can overshoot them.
+
 The following shows where supervision fits into your own agent loop; provide
 your own `prompt`, `apply_fix`, `run_tests`, and `git_rev` functions. For a
 copy-paste first-run check, use the [hosted quickstart](https://agentsupra.in/docs/quickstart).

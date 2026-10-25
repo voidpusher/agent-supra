@@ -227,7 +227,8 @@ class Supervisor:
             for e in sorted(clean, key=lambda x: x["seq"]):
                 data = e["data"]
                 if e["type"] == "model.call":
-                    if data.get("cost_micros") is None:
+                    data.setdefault("cost_micros", None)
+                    if data.get("cost_micros") is None and not data.get("usage_missing"):
                         data["cost_micros"] = pricing.estimate_cost_micros(
                             data.get("model", ""), data["input_tokens"], data["output_tokens"], overrides)
                     data["price_version"] = pricing.PRICE_TABLE_VERSION

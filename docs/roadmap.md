@@ -88,8 +88,17 @@ reports and updates a dashboard run with private replayable delivery. Observatio
 is the default; enforcement cancels the owned process tree on pause. Native
 Windows CLI/API/pytest, early Stop and grandchild cancellation checks pass.
 Generic process suspension/resume, native macOS/Linux validation, provider spend
-tracking and the three-user setup trial remain open. Provider proxy is the next
-integration item; these internal tests still do not satisfy external adoption gates.
+tracking and the three-user setup trial remain open. These internal tests still
+do not satisfy external adoption gates.
+
+The [local provider proxy](provider-proxy.md) now covers Chat Completions text,
+function tools, streaming usage, per-instance estimated-spend/call checks and
+private metadata replay. OpenAI SDK protocol checks and a real Gemini-compatible
+two-call smoke check pass. Unknown usage halts further dispatch, and request IDs
+prevent re-execution within a journal. Exact pre-call budget reservations,
+distributed caps, Responses/Anthropic protocols and live OpenAI account access
+are not implemented/verified. The three-user setup trial is the next validation
+step before expanding integration scope.
 
 1. After Phase 0: Claude Code hooks first, then CLI watch, provider proxy, framework
    adapters and test-output parsers. Validate setup under 5 minutes with 3 new users.

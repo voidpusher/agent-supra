@@ -11,6 +11,7 @@
   <p class="muted">Create a first run in a few minutes, then connect your agent. Gemini, OpenAI and Anthropic are supported.</p>
   <p>Using Claude Code? The <a href="https://github.com/voidpusher/agent-supra/blob/main/docs/claude-code.md">experimental hook integration</a> connects tool activity and pytest reports. It requires the current source package and does not measure model spend.</p>
   <p>For an existing command, <a href="https://github.com/voidpusher/agent-supra/blob/main/docs/cli-watch.md">CLI watch</a> tracks process exits and JUnit reports without changing the agent loop. Enforcement cancels the owned process tree; model spend is not measured.</p>
+  <p>The <a href="https://github.com/voidpusher/agent-supra/blob/main/docs/provider-proxy.md">local provider proxy</a> adds Chat Completions token usage and estimated-spend checks. One in-flight request can exceed an estimated budget.</p>
 
   <h2>1. Get an API key</h2>
   <p>{% if session %}<a href="/app/keys">Create a key</a>{% else %}<a href="/signup">Create an account</a>, then create a key{% endif %} and set it in your environment:</p>

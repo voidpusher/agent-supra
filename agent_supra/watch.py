@@ -19,7 +19,7 @@ from .watch_process import ProcessTree
 
 
 class Journal:
-    def __init__(self, path: Path, scope: str, *, name='Watched command', mode='observe', replay=False):
+    def __init__(self, path: Path, scope: str, *, name='Watched command', mode='observe', replay=False, source='cli-watch', check_same_thread=True):
         self.path = Path(path)
         if replay and not (self.path / 'journal.sqlite3').is_file():
             raise ValueError('No watch journal at that location')
@@ -44,7 +44,7 @@ class Journal:
         if not replay:
             fd = os.open(db, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
             os.close(fd)
-        self.conn = sqlite3.connect(db, timeout=3)
+        self.conn = sqlite3.connect(db, timeout=3, check_same_thread=check_same_thread)
         self.conn.row_factory = sqlite3.Row
         self.conn.executescript('''CREATE TABLE IF NOT EXISTS meta (key TEXT PRIMARY KEY, value TEXT NOT NULL);
             CREATE TABLE IF NOT EXISTS events (seq INTEGER PRIMARY KEY, body TEXT NOT NULL, sent INTEGER NOT NULL DEFAULT 0);
@@ -59,7 +59,7 @@ class Journal:
             with self.conn:
                 for key, value in dict(scope=scope, name=name, mode=mode, salt=secrets.token_hex(32), effective=[]).items():
                     self.set(key, value)
-            self.append('run.started', {'source': 'cli-watch'})
+            self.append('run.started', {'source': source})
 
     def get(self, key, default=None):
         row = self.conn.execute('SELECT value FROM meta WHERE key=?', (key,)).fetchone()
