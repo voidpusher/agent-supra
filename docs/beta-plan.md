@@ -42,6 +42,10 @@ Sanchit
 
 ## Three-user setup trial
 
+Give participants the [self-guided setup instructions](setup-trial.md). The
+connection check is separate from the first real-agent run and does not count
+as outside agent adoption on its own.
+
 Use the published package in a fresh virtual environment, rather than a local
 checkout. Start with observation mode. Choose one path per participant:
 

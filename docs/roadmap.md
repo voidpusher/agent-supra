@@ -42,6 +42,12 @@ Records remain workspace-linked; they are not claimed to be anonymous.
 
 ### Beta execution checklist
 
+The [participant setup guide](setup-trial.md) is ready. The rendered quickstart
+was exercised with the published 1.1.0 SDK against an isolated HTTP service:
+completed run and test event confirmed, invalid-key/offline checks fail clearly,
+and no model calls or production credentials were used. This verifies the
+instructions internally; the three-person trial and real outside usage remain open.
+
 - [ ] Operator signs in and classifies existing test workspaces Internal.
 - [x] Confirmed three previously approved invitation messages in Gmail Sent on
   21 October 2026 (checked 25 October). One invitation was to the sender's own

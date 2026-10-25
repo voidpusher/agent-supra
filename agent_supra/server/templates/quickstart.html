@@ -9,27 +9,36 @@
 <main class="wrap prose doc">
   <h1>Quickstart</h1>
   <p class="muted">Create a first run in a few minutes, then connect your agent. Gemini, OpenAI and Anthropic are supported.</p>
-  <p>Using Claude Code? The <a href="https://github.com/voidpusher/agent-supra/blob/main/docs/claude-code.md">experimental hook integration</a> connects tool activity and pytest reports. It requires the current source package and does not measure model spend.</p>
+  <p>Using Claude Code? The <a href="https://github.com/voidpusher/agent-supra/blob/main/docs/claude-code.md">experimental hook integration</a> connects tool activity and pytest reports. Install Agent Supra 1.1.0 or newer; hooks do not measure model spend.</p>
   <p>For an existing command, <a href="https://github.com/voidpusher/agent-supra/blob/main/docs/cli-watch.md">CLI watch</a> tracks process exits and JUnit reports without changing the agent loop. Enforcement cancels the owned process tree; model spend is not measured.</p>
   <p>The <a href="https://github.com/voidpusher/agent-supra/blob/main/docs/provider-proxy.md">local provider proxy</a> adds Chat Completions token usage and estimated-spend checks. One in-flight request can exceed an estimated budget.</p>
 
   <h2>1. Get an API key</h2>
   <p>{% if session %}<a href="/app/keys">Create a key</a>{% else %}<a href="/signup">Create an account</a>, then create a key{% endif %} and set it in your environment:</p>
-<pre class="snippet">pip install agent-supra
-export AGENT_SUPRA_API_KEY="as_live_…"
+<pre class="snippet">python -m pip install --upgrade "agent-supra>=1.1.0"
+read -rs -p "Agent Supra API key: " AGENT_SUPRA_API_KEY; printf '\n'
+export AGENT_SUPRA_API_KEY
 export AGENT_SUPRA_URL="{{ base_url }}"</pre>
-  <p>On Windows PowerShell, use <code>$env:AGENT_SUPRA_API_KEY="as_live_…"</code> and <code>$env:AGENT_SUPRA_URL="{{ base_url }}"</code> instead of <code>export</code>.</p>
+  <p>The commands above use Bash. Paste your key at the hidden prompt, so it stays out of shell history. On Windows PowerShell, run the same install command, then:</p>
+<pre class="snippet">$env:AGENT_SUPRA_API_KEY = [System.Net.NetworkCredential]::new('', (Read-Host 'Agent Supra API key' -AsSecureString)).Password
+$env:AGENT_SUPRA_URL = '{{ base_url }}'</pre>
 
   <h2>2. Verify your first run</h2>
-  <p>Save this as <code>first_run.py</code> and run <code>python first_run.py</code>. It needs only your Agent Supra key and should show a completed run in your dashboard.</p>
-<pre class="snippet">from agent_supra import Client, SupervisedRun
+  <p>Save this as <code>first_run.py</code> and run <code>python first_run.py</code>. This connection check needs only your Agent Supra key, makes no model calls, and verifies that the server received a completed run. It is not a real-agent test.</p>
+<pre class="snippet" id="first-run-example">from agent_supra import Client, SupervisedRun
 
-sup = Client()
-task = sup.create_task("First Agent Supra run")
+sup = Client(fail_mode="closed")
+sup.whoami()  # check authentication before creating anything
+task = sup.create_task("Connection check", policy={"observation_mode": True})
 with SupervisedRun(sup, task) as run:
     run.report_tests(["smoke"], [], rev="first-run")
     run.finish("success")
-    print("Completed run:", run.run_id)</pre>
+
+status = sup.decide(run.run_id)
+if status.get("degraded") or status.get("state") != "completed":
+    raise RuntimeError("Run not verified. Check your connection and dashboard.")
+print("Verified completed run:", run.run_id)</pre>
+  <p>Open the run in your <a href="/app">dashboard</a>. A 401 or 403 means the key needs attention; recreate a revoked key under <a href="/app/keys">API keys</a>. A connection error can mean the URL is wrong or the service is unavailable. A browser login does not set your terminal's API key.</p>
 
   <h2>3. Wrap your agent</h2>
   <p>Install <code>google-genai</code> and set <code>GEMINI_API_KEY</code> for Gemini. The following is an integration outline: replace <code>prompt</code>, <code>apply_fix</code>, <code>run_tests</code> and <code>git_rev</code> with your agent's own functions. <code>rev</code> should change when the code changes, such as a git commit hash or a hash of edited files. For a runnable end-to-end example, see <a href="https://github.com/voidpusher/agent-supra/blob/main/examples/gemini_agent.py">gemini_agent.py</a>.</p>
@@ -80,6 +89,7 @@ run.record_model_call("my-model", input_tokens=1200, output_tokens=300)</pre>
   <h2>What gets sent</h2>
   <p>Token counts, model names, test IDs with pass or fail, code revision IDs, and keyed fingerprints of tool arguments and errors. Prompts, replies and code are never sent. See <a href="/privacy">Privacy</a>.</p>
   <h2>Help improve detection</h2>
+  <p>Joining the setup trial? Follow the <a href="https://github.com/voidpusher/agent-supra/blob/main/docs/setup-trial.md">participant guide</a> and connect one of your own agents after this connection check.</p>
   <p>Open a run in your dashboard and rate each flag as Useful, Too early or False alarm. If a run looked stuck but Supra missed it, use Report a missed loop on that run. Feedback does not pause, continue or stop the agent. Workspace members can update a flag's verdict.</p>
   <p>Found something that does not match this guide? <a href="https://github.com/voidpusher/agent-supra/issues">Report it on GitHub</a> or use the contact link below. Include the run ID and the step that blocked setup. Keep API keys, prompts and private code out of public issues.</p>
 </main>
