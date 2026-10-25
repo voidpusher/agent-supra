@@ -40,6 +40,36 @@ before signing up.
 Thanks,
 Sanchit
 
+## Three-user setup trial
+
+Use the published package in a fresh virtual environment, rather than a local
+checkout. Start with observation mode. Choose one path per participant:
+
+- Claude Code users: [hook setup](claude-code.md).
+- Existing commands that emit JUnit: [CLI watch](cli-watch.md).
+- Python model clients: the [hosted quickstart](https://agentsupra.in/docs/quickstart).
+
+The provider proxy is a separate experimental option for token/spend accounting;
+it does not detect test progress and still enforces configured budget/call caps.
+
+Start a timer when the participant begins installation with their account and
+credentials ready. Stop when their first genuine run appears in the dashboard.
+Record account/key setup time separately. Aim for under five minutes, treating
+that as a hypothesis to test, not a promised result. Let the participant follow
+the documentation independently; record any assistance and its cause.
+
+| Participant alias | Integration / OS | Package version | Account setup time | Install-to-first-run time | Needed help? | Run ID | Setup issue |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| A | | | | | | | |
+| B | | | | | | | |
+| C | | | | | | | |
+
+Only real outside users count toward adoption. Internal fixtures and the
+operator's own accounts do not. Do not record credentials, prompts, or source
+code. Fix observed setup failures before asking participants to retry. After
+the observation week, ask one participant to opt into loop-pause enforcement
+on a disposable task and review both correct pauses and false alarms.
+
 ## One-week review
 
 Day 1: connect one agent and confirm model calls appear.

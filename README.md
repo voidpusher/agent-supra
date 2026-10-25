@@ -39,7 +39,7 @@ Sign up, create an API key, then follow the quickstart at `/docs/quickstart`.
 
 For Claude Code, try the [experimental hook integration](docs/claude-code.md).
 It tracks tool/test activity and can deny the next tool call when paused.
-It requires the current source installation; model spend is not measured by hooks.
+It requires Agent Supra 1.1.0 or newer; model spend is not measured by hooks.
 
 For any existing command, try [CLI watch](docs/cli-watch.md):
 `agent-supra watch --junit ".local/results.xml" -- python my_agent.py`.
@@ -48,8 +48,8 @@ pause. The agent must generate the selected JUnit report for progress detection.
 
 For Chat Completions clients, the [local provider proxy](docs/provider-proxy.md)
 adds token/call accounting and estimated-spend checks by changing the client base
-URL. It supports text and streaming, stays on loopback, and requires current
-source with the `proxy` extra. Monetary limits are estimated thresholds; one
+URL. It supports text and streaming, stays on loopback, and requires Agent Supra
+1.1.0 or newer with the `proxy` extra. Monetary limits are estimated thresholds; one
 in-flight request can overshoot them.
 
 The following shows where supervision fits into your own agent loop; provide

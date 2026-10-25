@@ -9,15 +9,14 @@ agent-supra watch -- python my_agent.py
 The wrapper creates a dashboard run, forwards the command's normal terminal I/O,
 and records its exit. JUnit reports provide test-progress detection. Model calls,
 tokens, context growth and spend are **not measured or enforced** by this wrapper.
-Use the SDK wrappers for those signals; the provider proxy is still a later item.
+Use the SDK wrappers or the [local provider proxy](provider-proxy.md) for those signals.
 
 ## Install and connect
 
-This command is newer than the published `agent-supra==1.0.0` package. Install the
-current source in your virtual environment:
+This command requires Agent Supra 1.1.0 or newer. In your virtual environment:
 
 ```sh
-pip install --upgrade --force-reinstall "git+https://github.com/voidpusher/agent-supra.git"
+pip install --upgrade "agent-supra>=1.1.0"
 agent-supra watch --help
 ```
 

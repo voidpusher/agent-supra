@@ -29,14 +29,18 @@ through PyPI Trusted Publishing. It needs no stored PyPI API token.
 
 ## Release
 
-1. Confirm `pyproject.toml` has the intended version and `main` has passed CI.
+1. Set the intended version in both `pyproject.toml` and
+   `agent_supra/__init__.py`, update `CHANGELOG.md`, and confirm `main` passes CI.
 2. Open **Actions → publish SDK to PyPI → Run workflow** on `main`, enter the
    matching version, and run it. The first trusted-publisher upload creates
    the PyPI project.
 3. Confirm the workflow is green and both the `.whl` and `.tar.gz` appear on
    `https://pypi.org/project/agent-supra/`.
-4. In a fresh virtual environment, run `pip install agent-supra` and import
-   `Client` from `agent_supra`.
+4. In a fresh virtual environment outside the checkout, install the exact new
+   version from PyPI, import `Client`, and check `agent-supra watch --help`,
+   `agent-supra claude-hook --help`, and `agent-supra proxy --help`. Verify the
+   core install has no mandatory dependencies. Separately install the `proxy`
+   extra and confirm it resolves successfully.
 5. Confirm the README and hosted quickstart offer `pip install agent-supra`
    after the clean install passes.
 

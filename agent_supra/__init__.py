@@ -4,7 +4,7 @@ The SDK (this package's top level) has no dependencies. The server lives in
 ``agent_supra.server`` and needs ``pip install 'agent-supra[server]'``.
 """
 
-__version__ = "1.0.0"
+__version__ = "1.1.0"
 
 from .client import Client, SupervisorAPIError, SupervisorUnavailable  # noqa: E402
 from .detector import DEFAULT_POLICY, Finding, evaluate  # noqa: E402

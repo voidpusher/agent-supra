@@ -4,14 +4,14 @@ Observe tool activity and pytest progress without changing your agent loop.
 Pause mode can deny the **next tool call** when Supra pauses or stops a run.
 This is a preview integration, not a security sandbox or a model-request proxy.
 
-## Install from the current source
+## Install and connect
 
-The hook command is newer than the published `agent-supra==1.0.0` package.
-Use the current GitHub source, with Python 3.10+ and a terminal where its
+The hook command requires Agent Supra 1.1.0 or newer.
+Use Python 3.10+ and a terminal where its
 `agent-supra` command is on PATH. Activate your virtual environment first.
 
 ```sh
-pip install --upgrade --force-reinstall "git+https://github.com/voidpusher/agent-supra.git"
+pip install --upgrade "agent-supra>=1.1.0"
 agent-supra claude-hook --help
 claude plugin marketplace add voidpusher/agent-supra
 claude plugin install agent-supra@agent-supra

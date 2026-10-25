@@ -12,20 +12,19 @@ multiple completions (`n > 1`) are not supported. Unsupported routes/fields are
 rejected rather than forwarded without supervision. The proxy does not observe
 tests or prove agent progress; use the existing SDK/hooks for those signals.
 
-## Install current source
+## Install
 
-The published `agent-supra==1.0.0` package does not include this command yet.
-In a checkout, activate your virtual environment and run:
+The proxy requires Agent Supra 1.1.0 or newer. Activate your virtual environment:
 
 ```sh
-pip install -e ".[proxy]"
+pip install --upgrade "agent-supra[proxy]>=1.1.0"
 agent-supra proxy --help
 ```
 
-Or install the current GitHub source:
+For development in a repository checkout:
 
 ```sh
-pip install --upgrade --force-reinstall "agent-supra[proxy] @ git+https://github.com/voidpusher/agent-supra.git"
+pip install -e ".[proxy]"
 ```
 
 The optional proxy extra adds FastAPI, uvicorn and httpx. The core SDK remains
