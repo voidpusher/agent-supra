@@ -37,6 +37,10 @@ Sign up, create an API key, then follow the quickstart at `/docs/quickstart`.
 
 ## Connect an agent
 
+For Claude Code, try the [experimental hook integration](docs/claude-code.md).
+It tracks tool/test activity and can deny the next tool call when paused.
+It requires the current source installation; model spend is not measured by hooks.
+
 The following shows where supervision fits into your own agent loop; provide
 your own `prompt`, `apply_fix`, `run_tests`, and `git_rev` functions. For a
 copy-paste first-run check, use the [hosted quickstart](https://agentsupra.in/docs/quickstart).

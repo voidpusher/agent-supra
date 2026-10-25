@@ -74,6 +74,12 @@ No user friction or false-positive results are assumed until outside feedback ex
 
 ## Later phases — gated
 
+Owner-requested preview work has started ahead of the outside-usage gate:
+[Claude Code hooks](claude-code.md) now have a local bridge and plugin with
+observation/pause modes, private durable delivery, JUnit test identities and
+parent/child tool-boundary checks. This does not satisfy the Phase 0 usage gate.
+Authenticated host validation and the three-user setup trial remain open.
+
 1. After Phase 0: Claude Code hooks first, then CLI watch, provider proxy, framework
    adapters and test-output parsers. Validate setup under 5 minutes with 3 new users.
    Consult current official hook/API docs when implementation starts.

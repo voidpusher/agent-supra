@@ -132,6 +132,10 @@ def _test_analysis(events: list[dict], threshold: int) -> tuple[list[Finding], l
             rule = "no_progress"
             msg = (f"{len(streak)} attempts in a row without getting below {best} failing test(s); "
                    f"the agent keeps trading one failure for another (now failing: {failing_txt}).")
+        elif not all(revs):
+            rule = "no_progress"
+            msg = (f"The same {len(prev_eff)} failing test(s) ({failing_txt}) on {len(streak)} "
+                   f"consecutive attempts; code revisions were unavailable for one or more attempts.")
         elif len(distinct) == 1:
             rule = "exact_repeat"
             msg = (f"The same {len(prev_eff)} failing test(s) ({failing_txt}) on {len(streak)} "

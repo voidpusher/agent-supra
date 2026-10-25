@@ -245,7 +245,7 @@ class Supervisor:
                 conn.execute(update(db.runs).where(db.runs.c.id == run_id).values(**values))
                 if e["type"] == "run.finished":
                     current = self._run(conn, run_id, ws)
-                    if current.state not in TERMINAL:
+                    if current.state == "running":
                         outcome = str(data.get("outcome", "unknown"))
                         conn.execute(update(db.runs).where(db.runs.c.id == run_id).values(
                             state=OUTCOMES.get(outcome, "failed"), outcome=outcome[:20]))

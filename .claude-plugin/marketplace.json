@@ -1,0 +1,6 @@
+{
+  "name": "agent-supra",
+  "metadata": {"description": "Agent Supra's Claude Code supervision plugin."},
+  "owner": {"name": "Sanchit Pandey"},
+  "plugins": [{"name": "agent-supra", "source": "./plugins/claude-code", "description": "Evidence-backed tool supervision and pytest progress for Claude Code."}]
+}
