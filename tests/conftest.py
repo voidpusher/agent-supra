@@ -17,10 +17,17 @@ def database_url() -> str:
 @pytest.fixture
 def supervisor():
     sup = Supervisor(database_url())
-    yield sup
-    if sup.engine.dialect.name == "postgresql":
-        from agent_supra.server import db
-        db.metadata.drop_all(sup.engine)
+    try:
+        yield sup
+    finally:
+        try:
+            if sup.engine.dialect.name == "postgresql":
+                from agent_supra.server import db
+                db.metadata.drop_all(sup.engine)
+        finally:
+            # Each test owns an engine. Dropping tables does not release its
+            # pooled connections; leaving them open exhausts Postgres in CI.
+            sup.engine.dispose()
 
 
 class Sent(list):
@@ -37,7 +44,10 @@ def server(supervisor):
     client = TestClient(app)
     client.alerts = sent
     client.ctx = app.state.ctx
-    return client
+    try:
+        yield client
+    finally:
+        client.close()
 
 
 def csrf_from(html: str) -> str:
