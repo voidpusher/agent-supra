@@ -138,9 +138,37 @@ The installed Claude Code CLI validates the plugin/marketplace manifests. API te
 replay documented hook payloads against the real local Supra application, including
 pause/observe, parent pauses, concurrent duplicates, report freshness, lifecycle,
 privacy and outage replay. A separate smoke script runs actual pytest through the
-hook command and a loopback server. These are protocol and local execution checks;
-an authenticated end-to-end Claude conversation and three new-user setup trials
-remain unverified. No adoption or setup-time claim is made.
+hook command and a loopback server.
+
+Authenticated native-host verification also passed on 2026-10-25 with the installed
+Claude Code CLI and its existing login, model alias `sonnet`, actual Bash tools,
+the unmodified plugin and isolated local Supra:
+
+| Scenario | Actual pytest executions | Supra result |
+| --- | --- | --- |
+| Reviewed repair | 2 | Completed, both reports recorded, final tests passing |
+| Unchanged failure | 4 | Paused; Claude requested a fifth tool call and received Supra's denial before execution |
+| Observation | 5 | Flagged without blocking; session ended failed because the fixture remained broken |
+
+These were real provider conversations using synthetic fixtures, not replayed hook
+inputs. Normal Claude permissions remained enabled with only the fixture's pytest
+and reviewed repair commands allowed. No production API key or database was used;
+temporary local Supra keys were revoked on cleanup. The CLI's estimated token-cost
+values are test diagnostics, not evidence that the hooks measure or enforce spend.
+Three new-user setup trials and broader platform validation remain open. No
+adoption or setup-time claim is made.
+
+To repeat the authenticated test with dev extras installed:
+
+```sh
+claude auth login
+python -m scripts.claude_host_test
+```
+
+It consumes your Claude quota/provider usage and caps CLI-reported usage at $0.50
+per scenario, with eight turns and a 150-second process timeout. Choose one case
+with `--scenario healthy`, `stuck` or `observe`. Sanitized evidence is saved under
+ignored `.local/claude-code-host/`; raw conversation output is not a report artifact.
 
 Run the local smoke check with dev extras installed:
 
