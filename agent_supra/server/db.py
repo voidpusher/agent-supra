@@ -142,6 +142,37 @@ interventions = Table(
     Index("ix_interventions_run", "run_id", "created_at"),
 )
 
+beta_measurement = Table(
+    "beta_measurement", metadata,
+    Column("id", Integer, primary_key=True),
+    Column("started_at", Float, nullable=False),
+)
+
+run_activity = Table(
+    "run_activity", metadata,
+    Column("run_id", String(40), ForeignKey("runs.id", ondelete="CASCADE"), primary_key=True),
+    Column("first_received_at", Float, nullable=False),
+    Column("last_received_at", Float, nullable=False),
+    Index("ix_run_activity_last", "last_received_at"),
+)
+
+beta_cohorts = Table(
+    "beta_cohorts", metadata,
+    Column("workspace_id", String(40), ForeignKey("workspaces.id", ondelete="CASCADE"), primary_key=True),
+    Column("kind", String(20), nullable=False),
+    Column("updated_at", Float, nullable=False),
+)
+
+flag_feedback = Table(
+    "flag_feedback", metadata,
+    Column("id", String(80), primary_key=True),
+    Column("run_id", String(40), ForeignKey("runs.id", ondelete="CASCADE"), nullable=False),
+    Column("intervention_id", String(40), ForeignKey("interventions.id", ondelete="CASCADE"), unique=True),
+    Column("user_id", String(40), ForeignKey("users.id", ondelete="CASCADE"), nullable=False),
+    Column("verdict", String(20), nullable=False),
+    Column("updated_at", Float, nullable=False),
+)
+
 errors = Table(
     "errors", metadata,
     Column("fingerprint", String(64), primary_key=True),
@@ -193,6 +224,7 @@ def migrate(engine: Engine) -> int:
             # Serialize cold-start schema setup across serverless instances.
             conn.execute(text("SELECT pg_advisory_xact_lock(734829105)"))
         metadata.create_all(conn)
+        insert_ignore(conn, engine, beta_measurement, id=1, started_at=time.time())
         row = conn.execute(select(schema_info.c.version).where(schema_info.c.id == 1)).first()
         if row is None:
             conn.execute(schema_info.insert().values(id=1, version=SCHEMA_VERSION, applied_at=time.time()))

@@ -76,6 +76,8 @@ run.record_model_call("my-model", input_tokens=1200, output_tokens=300)</pre>
 
   <h2>What gets sent</h2>
   <p>Token counts, model names, test IDs with pass or fail, code revision IDs, and keyed fingerprints of tool arguments and errors. Prompts, replies and code are never sent. See <a href="/privacy">Privacy</a>.</p>
-  <p>Found something that does not match this guide? <a href="https://github.com/voidpusher/agent-supra/issues">Report it on GitHub</a> or use the contact link below. Keep API keys, prompts and private code out of public issues.</p>
+  <h2>Help improve detection</h2>
+  <p>Open a run in your dashboard and rate each flag as Useful, Too early or False alarm. If a run looked stuck but Supra missed it, use Report a missed loop on that run. Feedback does not pause, continue or stop the agent. Workspace members can update a flag's verdict.</p>
+  <p>Found something that does not match this guide? <a href="https://github.com/voidpusher/agent-supra/issues">Report it on GitHub</a> or use the contact link below. Include the run ID and the step that blocked setup. Keep API keys, prompts and private code out of public issues.</p>
 </main>
 {% endblock %}

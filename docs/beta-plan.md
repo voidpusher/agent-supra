@@ -1,5 +1,11 @@
 # Private beta preparation
 
+The phase gates and measurement definitions are in [roadmap.md](roadmap.md).
+The operator can use `/app/beta` to confirm outside workspaces and track activation.
+Participants can review each flag and report missed loops directly on run pages.
+Existing invitation drafts and this checklist are preparation, not evidence that
+outside users have been invited or activated; check delivery history before resending.
+
 ## Before invitations
 
 - Complete the real Gemini tests locally and against the deployed service.

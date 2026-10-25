@@ -8,7 +8,7 @@
 </div></header>
 <main class="wrap prose doc">
   <h1>Privacy</h1>
-  <p class="muted">Updated 21 October 2026 · What {{ app_name }} stores, why, and how to delete it.</p>
+  <p class="muted">Updated 25 October 2026 · What {{ app_name }} stores, why, and how to delete it.</p>
   <p>{{ app_name }} is operated by Sanchit Pandey under the Orrico Labs name. For privacy questions or requests, contact <a href="mailto:{{ contact_email }}">{{ contact_email }}</a>.</p>
 
   <h2>What the SDK sends</h2>
@@ -27,7 +27,8 @@
   <p>We also store your workspace name, supervision rules, model prices you configure, and any alert email address or Slack webhook you save. We use these settings to supervise runs, show estimated spend, and deliver the alerts you request. Anyone with access to your workspace settings can update its alert destinations, so treat a Slack webhook as a secret.</p>
 
   <h2>How long it's kept</h2>
-  <p>Run data and unexpected server-error records are removed from the active database after {{ retention_days }} days. Error records contain an exception type, route pattern, stack locations, and occurrence times and counts; they exclude exception messages and request contents. Account details stay in the active database until you delete your account.</p>
+  <p>To improve setup and detection during beta, we measure account and API-key creation, first event receipt, flags, and weekly workspace activity using server records. We store event receipt times, an internal/testing or outside-user workspace classification, and any flag verdicts or missed-loop reports you submit. Feedback records include the submitting account ID and can be updated by workspace members. The operator sees workspace activation and aggregate usage and feedback counts. These records are linked to your workspace; they are not anonymous. No external analytics service or additional tracking cookie is used.</p>
+  <p>Run data, associated activity receipt times and feedback, and unexpected server-error records are removed from the active database after {{ retention_days }} days. Error records contain an exception type, route pattern, stack locations, and occurrence times and counts; they exclude exception messages and request contents. Account details and workspace classification stay in the active database until you delete your account.</p>
   <p>Encrypted database backups are retained in GitHub Actions for up to 30 days. Neon recovery snapshots and isolated restored branches can retain older copies until they are deleted. Data removed from the active database can therefore remain in these recovery copies.</p>
 
   <h2>Deleting your data</h2>

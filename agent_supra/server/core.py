@@ -249,6 +249,12 @@ class Supervisor:
                         outcome = str(data.get("outcome", "unknown"))
                         conn.execute(update(db.runs).where(db.runs.c.id == run_id).values(
                             state=OUTCOMES.get(outcome, "failed"), outcome=outcome[:20]))
+            if inserted_any:
+                received = time.time()
+                if not db.insert_ignore(conn, self.engine, db.run_activity, run_id=run_id,
+                                        first_received_at=received, last_received_at=received):
+                    conn.execute(update(db.run_activity).where(db.run_activity.c.run_id == run_id)
+                                 .values(last_received_at=received))
             if inserted_any and self._run(conn, run_id, ws).state == "running":
                 new_interventions = self._judge(conn, run_id, task)
             decision = self._decision(conn, run_id, ws)

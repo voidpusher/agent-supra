@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block title %}{{ task.objective }} | {{ app_name }}{% endblock %}
-{% block head %}{% if run.state == "running" %}<script src="/static/refresh.js" defer></script>{% endif %}{% endblock %}
+{% block head %}{% if run.state == "running" %}<script src="/static/refresh.js?v=2" defer></script>{% endif %}{% endblock %}
 {% block content %}
 <p class="back"><a href="/app">All runs</a></p>
 <div class="page-head">
@@ -21,6 +21,11 @@
         {% if i.action != "pause" %}<p class="small muted note">Observation only: the run was not paused. Turn on pausing for this rule in Settings once you trust it.</p>{% endif %}
         {% if i.confidence != "high" %}<p class="small muted note">Low confidence: some events from this run never arrived, so it was flagged instead of paused.</p>{% endif %}
         {% if i.evidence %}<p class="small muted note">The {{ i.evidence | length }} steps behind this are highlighted below.</p>{% endif %}
+        <form method="post" action="/app/runs/{{ run.id }}/feedback" class="feedback-form">
+          <input type="hidden" name="csrf" value="{{ session.csrf }}"><input type="hidden" name="intervention_id" value="{{ i.id }}">
+          <label for="review-{{ i.id }}">Was this flag useful?</label>
+          <div class="actions"><select id="review-{{ i.id }}" name="verdict" required><option value="">Choose a verdict</option>{% for value, label in [('useful', 'Useful'), ('too_early', 'Too early'), ('false_alarm', 'False alarm')] %}<option value="{{ value }}" {% if feedback.get(i.id) == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select><button class="btn quiet" type="submit">Save feedback</button></div>
+        </form>
       </section>
       {% else %}
       <section class="finding human">
@@ -53,6 +58,7 @@
   </div>
 
   <aside>
+    <section class="panel"><h2>Did we miss a loop?</h2><p class="small muted">Report a stuck run that should have been flagged. This records feedback without changing the run.</p>{% if feedback.get('missed') %}<p class="small">Missed-loop report saved.</p>{% else %}<form method="post" action="/app/runs/{{ run.id }}/feedback"><input type="hidden" name="csrf" value="{{ session.csrf }}"><input type="hidden" name="verdict" value="missed"><button class="btn quiet" type="submit">Report a missed loop</button></form>{% endif %}</section>
     <section class="panel">
       <h2>Spend</h2>
       <dl class="facts">

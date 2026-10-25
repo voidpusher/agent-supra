@@ -247,6 +247,9 @@ pre.snippet { font-family: var(--mono); font-size: 13.5px; line-height: 1.55; ma
 .auth .btn { width: 100%; min-height: 48px; font-size: 16px; margin-top: 4px; }
 
 /* ---------- landing ---------- */
+.feedback-form { margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--separator); }
+.feedback-form label { display: block; font-size: 13px; margin-bottom: 8px; color: var(--label-2); }
+.feedback-form select { max-width: 220px; }
 
 .band { padding: 64px 0; border-top: 1px solid var(--separator); }
 .band h2 { font-size: clamp(29px, 3.2vw, 40px); letter-spacing: -0.05em; line-height: 1.08; margin-bottom: 14px; }

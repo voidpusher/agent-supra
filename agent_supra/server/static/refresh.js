@@ -1,6 +1,12 @@
-// Reload a running run's page every 15 seconds, unless someone is typing.
+// Preserve unsaved action reasons and beta feedback while a run is active.
+var unsavedRunForm = false;
+['input', 'change'].forEach(function (eventName) {
+  document.addEventListener(eventName, function (event) {
+    if (event.target.closest('form')) unsavedRunForm = true;
+  });
+});
 setInterval(function () {
   var el = document.activeElement;
-  var typing = el && (el.tagName === "INPUT" || el.tagName === "TEXTAREA") && el.value;
-  if (!typing && document.visibilityState === "visible") location.reload();
+  var editing = el && ['INPUT', 'TEXTAREA', 'SELECT'].includes(el.tagName);
+  if (!unsavedRunForm && !editing && document.visibilityState === "visible") location.reload();
 }, 15000);

@@ -19,6 +19,7 @@ from ..detector import HEURISTIC_RULES, merge_policy
 from ..present import RULE_HELP, describe_event, rule_label
 from .accounts import Session
 from .alerts import compose, send_email, valid_slack_webhook
+from .beta import Beta
 from .core import SupervisorError
 
 SESSION_COOKIE = "as_session"
@@ -34,6 +35,8 @@ NOTICES = {
     "continued": ("success", "Run continued."),
     "paused": ("success", "Run paused."),
     "stopped": ("success", "Run stopped."),
+    "reviewed": ("success", "Feedback saved. Thank you for helping improve detection."),
+    "cohort-saved": ("success", "Beta classification saved."),
     "revoked": ("success", "Key revoked. Agents using it will get a 401 on their next request."),
     "password": ("success", "Password changed. Other sessions were logged out."),
     "alert-sent": ("success", "Test alert delivered to configured channels."),
@@ -66,6 +69,7 @@ def build_router(state) -> APIRouter:
         "describe": lambda e: Markup(describe_event(e)),
     })
     settings, sup, accounts = state.settings, state.supervisor, state.accounts
+    beta = Beta(sup.engine, settings.contact_email)
 
     def page(request: Request, name: str, status: int = 200, **ctx) -> HTMLResponse:
         ctx.setdefault("session", getattr(request.state, "session", None))
@@ -269,6 +273,47 @@ def build_router(state) -> APIRouter:
                     next_offset=offset + 100, state=state_filter, paused_count=paused,
                     stats=sup.stats(workspace_id=session.workspace_id))
 
+    @router.get("/app/beta", response_class=HTMLResponse)
+    def beta_page(request: Request, offset: int = 0):
+        session = current(request)
+        if not session:
+            return login_redirect()
+        if session.email.casefold() != settings.contact_email.casefold():
+            return page(request, "error.html", 403, title="Access denied",
+                        message="Only the site operator can view beta measurements.")
+        return page(request, "beta.html", nav="beta", metrics=beta.dashboard(offset=max(0, offset)))
+
+    @router.post("/app/beta/cohort")
+    def beta_cohort(request: Request, workspace_id: str = Form(""), kind: str = Form(""),
+                    csrf: str = Form("")):
+        session = current(request)
+        if not session:
+            return login_redirect()
+        if session.email.casefold() != settings.contact_email.casefold():
+            return page(request, "error.html", 403, title="Access denied",
+                        message="Only the site operator can classify beta workspaces.")
+        if not check_csrf(session, csrf):
+            return forbidden(request)
+        try:
+            beta.classify(workspace_id, kind)
+        except SupervisorError as exc:
+            return page(request, "error.html", exc.status, title="Classification not saved", message=str(exc))
+        return RedirectResponse("/app/beta?notice=cohort-saved", status_code=303)
+
+    @router.post("/app/runs/{run_id}/feedback")
+    def run_feedback(request: Request, run_id: str, intervention_id: str = Form(""),
+                     verdict: str = Form(""), csrf: str = Form("")):
+        session = current(request)
+        if not session:
+            return login_redirect()
+        if not check_csrf(session, csrf):
+            return forbidden(request)
+        try:
+            beta.feedback(session.workspace_id, session.user_id, run_id, intervention_id, verdict)
+        except SupervisorError as exc:
+            return page(request, "error.html", exc.status, title="Feedback not saved", message=str(exc))
+        return RedirectResponse(f"/app/runs/{run_id}?notice=reviewed", status_code=303)
+
     @router.get("/app/errors", response_class=HTMLResponse)
     def errors_page(request: Request):
         session = current(request)
@@ -311,7 +356,8 @@ def build_router(state) -> APIRouter:
                            "running": pricing.usd(running) if is_call else ""})
         evidence = {eid for i in tl["interventions"] for eid in i["evidence"]}
         return page(request, "run.html", nav="runs", run=tl["run"], task=tl["task"], events=events,
-                    interventions=tl["interventions"], evidence=evidence, task_spend=tl["task_spend"])
+                    interventions=tl["interventions"], evidence=evidence, task_spend=tl["task_spend"],
+                    feedback=beta.run_feedback(session.workspace_id, run_id))
 
     def run_action(request: Request, run_id: str, csrf: str, fn, notice: str):
         session = current(request)
