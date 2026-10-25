@@ -430,7 +430,7 @@ def build_router(state) -> APIRouter:
         return page(request, "settings.html", status, nav="settings", ws=ws,
                     policy=merge_policy(ws["default_policy"]), rules=RULE_HELP,
                     prices_text=prices_text, smtp=bool(settings.smtp_host),
-                    notice={"kind": "error", "text": error} if error else None)
+                    **({"notice": {"kind": "error", "text": error}} if error else {}))
 
     @router.get("/app/settings", response_class=HTMLResponse)
     def settings_get(request: Request):

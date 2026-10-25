@@ -95,14 +95,23 @@ class SuiteResult:
 
 def run_tests(repo: Path) -> SuiteResult:
     report = repo / ".junit.xml"
-    subprocess.run([sys.executable, "-m", "pytest", "-q", "-p", "no:cacheprovider",
-                    f"--junitxml={report}"], cwd=repo, capture_output=True, text=True, timeout=120)
+    report.unlink(missing_ok=True)
+    completed = subprocess.run([sys.executable, "-m", "pytest", "-q", "-p", "no:cacheprovider",
+                                f"--junitxml={report}"], cwd=repo, capture_output=True, text=True, timeout=120)
+    if completed.returncode not in (0, 1):
+        raise RuntimeError(f"pytest runner failed with exit code {completed.returncode}")
+    try:
+        root = ET.parse(report).getroot()
+    except (OSError, ET.ParseError) as exc:
+        raise RuntimeError("pytest report is missing or malformed") from exc
     suite, failing = [], []
-    for case in ET.parse(report).getroot().iter("testcase"):
+    for case in root.iter("testcase"):
         test_id = f"{case.get('classname')}::{case.get('name')}"
         suite.append(test_id)
         if case.find("failure") is not None or case.find("error") is not None:
             failing.append(test_id)
+    if not suite:
+        raise RuntimeError("No tests were collected by pytest")
     return SuiteResult(suite, failing)
 
 

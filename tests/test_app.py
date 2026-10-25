@@ -216,6 +216,27 @@ def test_test_alert(account):
     assert len(server.alerts) == 1
 
 
+def test_settings_save_confirmation_survives_redirect(account):
+    server, _ = account
+    page = server.get("/app/settings")
+    response = server.post("/app/settings", data={"csrf": csrf_from(page.text),
+        "name": "My agents", "threshold": "4"})
+    assert response.status_code == 200
+    assert "Settings saved." in response.text
+
+
+def test_alert_redirect_displays_missing_destination_and_success(account):
+    server, key = account
+    page = server.get("/app/settings")
+    response = server.post("/app/settings/test-alert", data={"csrf": csrf_from(page.text)})
+    assert "Add a Slack webhook or alert email first" in response.text
+    ws = server.ctx.accounts.authenticate_key(key).workspace_id
+    server.ctx.accounts.update_workspace(ws, slack_webhook="https://hooks.slack.com/services/T/B/test")
+    response = server.post("/app/settings/test-alert", data={"csrf": csrf_from(page.text)})
+    assert "Test alert delivered to configured channels." in response.text
+    assert len(server.alerts) == 1
+
+
 def test_test_alert_sends_slack_when_email_is_unconfigured(account):
     server, _ = account
     page = server.get("/app/settings")
