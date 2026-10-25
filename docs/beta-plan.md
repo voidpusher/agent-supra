@@ -3,8 +3,10 @@
 The phase gates and measurement definitions are in [roadmap.md](roadmap.md).
 The operator can use `/app/beta` to confirm outside workspaces and track activation.
 Participants can review each flag and report missed loops directly on run pages.
-Existing invitation drafts and this checklist are preparation, not evidence that
-outside users have been invited or activated; check delivery history before resending.
+Three previously approved invitations were confirmed in Gmail Sent on 21 October
+2026 (checked 25 October). One was sent to the sender's own account. This does not
+establish outside activation, delivery or acceptance. Do not resend duplicates.
+The participant table below still needs actual run IDs and feedback from outside users.
 
 ## Before invitations
 

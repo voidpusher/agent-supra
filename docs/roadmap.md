@@ -43,8 +43,11 @@ Records remain workspace-linked; they are not claimed to be anonymous.
 ### Beta execution checklist
 
 - [ ] Operator signs in and classifies existing test workspaces Internal.
-- [ ] Confirm invitation history with recipients; existing docs alone do not establish
-  whether invitations were sent or acted on. Avoid duplicate invitations.
+- [x] Confirmed three previously approved invitation messages in Gmail Sent on
+  21 October 2026 (checked 25 October). One invitation was to the sender's own
+  account, so this is not evidence of three outside users. Recipient addresses
+  are intentionally omitted from the public repository. Do not resend duplicates;
+  delivery, acceptance and actual outside activation remain unverified.
 - [ ] Prepare 30 relevant outreach prospects and review the messages before sending.
   No new outreach was sent as part of this engineering release.
 - [ ] Post the existing edited-replay demo, clearly labeled as a replay, when the owner
