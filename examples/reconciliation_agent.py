@@ -110,14 +110,14 @@ class CountedProvider:
         return self.provider.models.generate_content(**kwargs)
 
 
-def reconcile(backend, folder, provider, *, scenario='healthy', model='gemini-3.5-flash-lite', steps=None):
+def reconcile(backend, folder, provider, *, scenario='healthy', model='gemini-3.5-flash-lite', steps=None, policy=None):
     steps = (12 if scenario == 'healthy' else 8) if steps is None else steps
     if scenario not in {'healthy', 'stuck', 'observe'} or not 1 <= steps <= 12:
         raise ValueError('Unknown scenario or invalid step limit')
     ledger = Ledger(folder, conflicting=scenario != 'healthy')
     counted = CountedProvider(provider)
     task = backend.create_task('INTERNAL invoice agent / ' + scenario, budget_usd=.05,
-                               max_calls=steps + 1, policy={'observation_mode': scenario == 'observe'})
+                               max_calls=steps + 1, policy={**(policy or {}), 'observation_mode': scenario == 'observe'})
     run = SupervisedRun(backend, task)
     wrapped = run.wrap_gemini(counted)
     history, attempts, quotes = [], [], {}

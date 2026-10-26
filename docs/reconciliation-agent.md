@@ -1,5 +1,8 @@
 # Our invoice-reconciliation agent
 
+The [live verification report](live-agent-verification.md) covers production
+Gemini runs, dashboard controls, limits, recovery, and alert-verification limits.
+
 This is a working Gemini tool loop that reads a synthetic invoice ledger,
 requests deterministic calculator results, chooses corrections, writes the
 ledger, and validates it. It is separate from the earlier coding-agent fixtures.

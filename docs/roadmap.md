@@ -42,6 +42,11 @@ Records remain workspace-linked; they are not claimed to be anonymous.
 
 ### Beta execution checklist
 
+[Live agent verification](live-agent-verification.md) now covers the production
+invoice-agent runs, dashboard Continue/Stop, limits and client-outage recovery.
+Alert transport acceptance passed; independent inbox/channel receipt remains
+unverified. Production credentials are excluded from CI and public reports.
+
 Our [invoice-reconciliation agent](reconciliation-agent.md) now exercises real
 Gemini decisions, calculator/ledger tools, immutable business checks and HTTP
 supervision. Healthy completion, loop pause with a blocked next provider call,
