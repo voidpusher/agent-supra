@@ -8,6 +8,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import shlex
 import subprocess
 import sys
 from datetime import datetime
@@ -22,7 +23,7 @@ def command(args, cwd):
         raise RuntimeError('fixture setup failed')
 
 
-def scenario(backend, output, name, *, repair=False, observe=False):
+def scenario(backend, output, name, *, repair=False, observe=False, bare_pytest=False):
     repo = output / name
     repo.mkdir()
     (repo / '.local').mkdir()
@@ -40,12 +41,13 @@ def scenario(backend, output, name, *, repair=False, observe=False):
     cli = [sys.executable, '-m', 'agent_supra.cli', 'claude-hook']
     host = Path(__file__).resolve().parents[1]
     timings = []
+    active_command = 'pytest test_calc.py -q' if bare_pytest else 'python -m pytest test_calc.py -q --junitxml=.local/results.xml'
 
     def hook(event, call=None, **extra):
         payload = dict(session_id='smoke-' + name, hook_event_name=event, cwd=str(repo))
         if call:
             payload.update(tool_name='Bash', tool_use_id=call,
-                tool_input={'command': 'python -m pytest test_calc.py -q --junitxml=.local/results.xml'})
+                tool_input={'command': active_command})
         payload.update(extra)
         import time
         start = time.monotonic()
@@ -56,15 +58,22 @@ def scenario(backend, output, name, *, repair=False, observe=False):
             raise RuntimeError('hook command failed; no private payload logged')
         return json.loads(result.stdout)
 
-    hook('SessionStart')
+    attached = hook('SessionStart')
+    assert '--junitxml=' in attached['hookSpecificOutput']['additionalContext']
     attempts, denied = 0, False
     for index in range(5):
         call = f'test-{index}'
+        active_command = 'pytest test_calc.py -q' if bare_pytest else 'python -m pytest test_calc.py -q --junitxml=.local/results.xml'
         result = hook('PreToolUse', call)
         if result.get('hookSpecificOutput', {}).get('permissionDecision') == 'deny':
             denied = True
             break  # The actual tool is deliberately never started.
-        proc = subprocess.run([sys.executable, '-m', 'pytest', 'test_calc.py', '-q', '--junitxml=.local/results.xml'],
+        if bare_pytest:
+            active_command = result['hookSpecificOutput']['updatedInput']['command']
+            args = [str(Path(sys.executable).parent / ('pytest.exe' if os.name == 'nt' else 'pytest')), *shlex.split(active_command)[1:]]
+        else:
+            args = [sys.executable, '-m', 'pytest', 'test_calc.py', '-q', '--junitxml=.local/results.xml']
+        proc = subprocess.run(args,
                               cwd=repo, capture_output=True, text=True, timeout=30)
         if proc.returncode not in (0, 1):
             raise RuntimeError('fixture test runner failed')
@@ -99,6 +108,7 @@ def scenario(backend, output, name, *, repair=False, observe=False):
         state == 'paused' and attempts == 4 and denied and bool(rules))
     assert expected, f'{name} did not match the expected supervision result'
     return {'scenario': name, 'state': state, 'pytest_executions': attempts, 'test_reports': len(tests),
+            'bare_pytest': bare_pytest,
             'blocked_before_tool': denied, 'rules': rules, 'passed': expected,
             'max_hook_seconds': max(timings), 'run_id': timeline['run']['id']}
 
@@ -109,14 +119,15 @@ scenario.seen = set()
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--output', type=Path)
+    parser.add_argument('--bare-pytest', action='store_true', help='exercise report injection with the real pytest executable')
     args = parser.parse_args()
     output = (args.output or Path('.local/claude-code-smoke') / datetime.now().strftime('%Y%m%d-%H%M%S')).resolve()
     output.mkdir(parents=True, exist_ok=False)
     scenario.seen.clear()
     with local_service(output) as (backend, sup, workspace, alerts):
-        results = [scenario(backend, output, 'healthy', repair=True),
-                   scenario(backend, output, 'stuck'),
-                   scenario(backend, output, 'observe', observe=True)]
+        results = [scenario(backend, output, 'healthy', repair=True, bare_pytest=args.bare_pytest),
+                   scenario(backend, output, 'stuck', bare_pytest=args.bare_pytest),
+                   scenario(backend, output, 'observe', observe=True, bare_pytest=args.bare_pytest)]
     report = {'kind': 'Internal Claude hook protocol smoke test; no Claude conversation or model calls',
               'production_used': False, 'test_key_revoked': True, 'results': results}
     (output / 'report.json').write_text(json.dumps(report, indent=2))

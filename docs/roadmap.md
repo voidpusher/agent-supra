@@ -6,6 +6,10 @@ measurement. Do not use founder tests as evidence of outside adoption.
 
 ## Current phase: 0 — private beta
 
+Freeze additional Phase 1 scope until the Phase 0 gate is met. Fix reproducible
+setup/reliability blockers in the existing previews and prioritize outside setup
+trials, feedback and outreach over another internal agent or integration feature.
+
 Implemented in this release:
 
 - Operator-only `/app/beta`: signup → key → first received event → first flag;
@@ -77,11 +81,14 @@ instructions internally; the three-person trial and real outside usage remain op
   account, so this is not evidence of three outside users. Recipient addresses
   are intentionally omitted from the public repository. Do not resend duplicates;
   delivery, acceptance and actual outside activation remain unverified.
-- [ ] Prepare 30 relevant outreach prospects and review the messages before sending.
-  No new outreach was sent as part of this engineering release.
+- [x] Prepare [30 public project-team candidates](beta-prospects.md) and
+  [invitation/post drafts](beta-launch-pack.md). These are researched candidates,
+  not 30 qualified contacts or consenting testers. Individual fit, contact route
+  and recipient/message review remain open. No new outreach has been sent.
 - [ ] Post the existing edited-replay demo, clearly labeled as a replay, when the owner
   approves the accounts and final post text.
 - [ ] Onboard 5 outside users on their own agents; record setup friction below.
+  Start with [three timed, assisted/unassisted setup records](setup-timing.md).
 - [ ] Review every flag and suspected miss during the week using the run's feedback forms.
 - [ ] Fix the top 3 observed setup blockers and the worst observed false positive.
 - [ ] Meet the measured Phase 0 gate before starting Phase 1.

@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.1.1 — 2026-10-26
+
+- Inject test-progress instructions into Claude Code's session and subagent context.
+- Add per-tool local JUnit report arguments to direct pytest commands that lack one,
+  preserving the original command and tool permissions. Chained shell commands,
+  Jest and Go remain unsupported test-progress inputs.
+- Retain explicit report destinations, freshness checks, private fingerprints and
+  pause enforcement. Separate tool calls cannot overwrite each other's auto reports.
+- Extend the internal invoice-agent matrix to rounding, duplicate and missing
+  records, partial progress, malformed actions and provider failures.
+- Reject duplicate JSON fields and malformed action types without executing model text.
+
 ## 1.1.0 — 2026-10-26
 
 - Add experimental Claude Code hooks for tool and test progress, with observation

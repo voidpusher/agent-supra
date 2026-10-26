@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 
-from agent_supra.claude_hook import HookBridge, HookClient, NoRedirect, junit_path, read_junit, validate_url, git_revision
+from agent_supra.claude_hook import HookBridge, HookClient, NoRedirect, junit_path, read_junit, validate_url, git_revision, prepare_pytest
 from agent_supra.client import SupervisorAPIError, SupervisorUnavailable
 
 
@@ -169,6 +169,67 @@ def test_resume_creates_new_run_without_reassigning_old_outbox(hooks):
 ])
 def test_junit_command_scope(tmp_path, command, valid):
     assert bool(junit_path(command, str(tmp_path))) == valid
+
+
+def test_session_guidance_reaches_model_context_without_granting_permissions(hooks):
+    bridge, _, _, folder = hooks
+    result = bridge().handle(payload(folder, 'SessionStart'))
+    context = result['hookSpecificOutput']
+    assert context['hookEventName'] == 'SessionStart'
+    assert 'python -m pytest --junitxml=.local/supra-tests.xml' in context['additionalContext']
+    assert 'Jest and Go test progress is not supported' in context['additionalContext']
+    assert 'permissionDecision' not in context
+
+
+@pytest.mark.parametrize('command', ['pytest', 'pytest -q tests/', 'python -m pytest -k "my test"', 'py.test -x'])
+def test_direct_pytest_gets_report_without_changing_original_arguments(tmp_path, command):
+    path, updated = prepare_pytest(command, str(tmp_path), 'call-one')
+    assert updated.startswith(command + ' --junitxml=')
+    assert path == junit_path(updated, str(tmp_path))
+    assert path != prepare_pytest(command, str(tmp_path), 'call-two')[0]
+
+
+@pytest.mark.parametrize('command', ['pytest;echo unsafe', 'pytest&&echo unsafe', 'pytest | cat',
+    'cd foo && pytest', 'pytest > out.txt', 'pytest\necho unsafe', 'pytest $(echo x)',
+    'pytest `echo x`', 'pytest # comment', 'pytest -- tests', 'pytest --help',
+    'pytest --junitxml=../outside.xml', 'pytest --junitxml=', 'jest', 'go test ./...'])
+def test_shell_programs_and_explicit_report_destinations_are_never_rewritten(tmp_path, command):
+    assert prepare_pytest(command, str(tmp_path), 'call')[1] is None
+
+
+@pytest.mark.parametrize('post_uses_original', [False, True])
+def test_bare_pytest_reports_real_progress_and_cannot_bypass_pause(hooks, post_uses_original):
+    bridge, requests, _, folder = hooks
+    for i in range(4):
+        pre = payload(folder, 'PreToolUse', str(i))
+        pre['tool_input'] = {'command': 'pytest -q', 'timeout': 30000}
+        result = bridge().handle(pre)['hookSpecificOutput']
+        assert 'permissionDecision' not in result
+        assert result['updatedInput']['timeout'] == 30000
+        path = junit_path(result['updatedInput']['command'], str(folder))
+        path.parent.mkdir(exist_ok=True)
+        report(folder)
+        path.write_bytes((folder/'results.xml').read_bytes())
+        post = dict(pre, hook_event_name='PostToolUseFailure', error='Exit code 1')
+        if not post_uses_original:
+            post['tool_input'] = result['updatedInput']
+        bridge().handle(post)
+    denied = bridge().handle(dict(pre, tool_use_id='blocked'))['hookSpecificOutput']
+    assert denied['permissionDecision'] == 'deny' and 'updatedInput' not in denied
+    timeline = bridge().client.timeline(runs(requests)[0])
+    assert len([e for e in timeline['events'] if e['type']=='tests.reported']) == 4
+    serialized = json.dumps(requests)
+    assert 'supra-tests-' not in serialized and 'pytest -q' not in serialized
+
+
+def test_auto_report_requires_fresh_evidence_not_a_successful_shell_exit(hooks):
+    bridge, requests, _, folder = hooks
+    pre = payload(folder, 'PreToolUse')
+    pre['tool_input'] = {'command': 'pytest'}
+    result = bridge().handle(pre)['hookSpecificOutput']['updatedInput']
+    bridge().handle(dict(pre, hook_event_name='PostToolUse', tool_input=result, tool_response={'stdout':'all passed'}))
+    timeline = bridge().client.timeline(runs(requests)[0])
+    assert not [e for e in timeline['events'] if e['type']=='tests.reported']
 
 
 def test_junit_skipped_and_malformed_reports_are_not_success(tmp_path):

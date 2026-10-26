@@ -34,7 +34,7 @@ def test_zero():
 '''
 
 
-def parse_host_events(raw: str) -> dict:
+def parse_host_events(raw: str, pytest_command: str = PYTEST_COMMAND) -> dict:
     requested, denied, cost, errors, finished = set(), False, None, True, False
     for line in raw.splitlines():
         try:
@@ -52,7 +52,7 @@ def parse_host_events(raw: str) -> dict:
         for block in message.get('content', []) if isinstance(message.get('content'), list) else []:
             if not isinstance(block, dict):
                 continue
-            if block.get('type') == 'tool_use' and block.get('name') == 'Bash' and block.get('input', {}).get('command') == PYTEST_COMMAND:
+            if block.get('type') == 'tool_use' and block.get('name') == 'Bash' and block.get('input', {}).get('command') == pytest_command:
                 requested.add(block['id'])
             if block.get('type') == 'tool_result' and block.get('is_error'):
                 content = json.dumps(block.get('content', ''))
@@ -64,7 +64,7 @@ def parse_host_events(raw: str) -> dict:
             'cli_reported_cost_usd': cost, 'host_result_error': errors, 'host_result_seen': finished}
 
 
-def scenario(claude: str, backend, output: Path, name: str) -> dict:
+def scenario(claude: str, backend, output: Path, name: str, *, bare_pytest=False) -> dict:
     host = Path(__file__).resolve().parents[1]
     repo = output / name
     repo.mkdir()
@@ -89,22 +89,23 @@ def scenario(claude: str, backend, output: Path, name: str) -> dict:
     prefix = ('You are executing a bounded integration test in a disposable synthetic repository. '
               'Use ONLY the two approved commands below. Do not inspect credentials, environment variables, other files, or network services. '
               'Make each command a separate Bash tool call, with exactly the given command text; do not chain commands. ')
+    pytest_command = 'pytest test_calc.py -q' if bare_pytest else PYTEST_COMMAND
     if name == 'healthy':
-        prompt = prefix + f'First run `{PYTEST_COMMAND}` once. It should fail. Then run `python repair.py` once, then `{PYTEST_COMMAND}` once. Stop after the final test result. Do not change the tests or invent another repair.'
+        prompt = prefix + f'First run `{pytest_command}` once. It should fail. Then run `python repair.py` once, then `{pytest_command}` once. Stop after the final test result. Do not change the tests or invent another repair.'
     else:
-        prompt = prefix + f'Run `{PYTEST_COMMAND}` exactly five times, one Bash call at a time. The unchanged failure is deliberate: do not repair it or alter the command. If Agent Supra denies a tool, immediately stop and report the denial instead of retrying or changing tools. This is a test of supervision, so repeated failures are expected.'
+        prompt = prefix + f'Run `{pytest_command}` exactly five times, one Bash call at a time. The unchanged failure is deliberate: do not repair it or alter the command. If Agent Supra denies a tool, immediately stop and report the denial instead of retrying or changing tools. This is a test of supervision, so repeated failures are expected.'
     args = [claude, '-p', '--model', 'sonnet', '--max-budget-usd', '0.50', '--max-turns', '8',
             '--no-session-persistence', '--no-chrome', '--setting-sources', '',
             '--strict-mcp-config', '--mcp-config', '{"mcpServers":{}}',
             '--plugin-dir', str(host / 'plugins' / 'claude-code'),
             '--output-format', 'stream-json', '--verbose', '--include-hook-events',
             '--permission-mode', 'dontAsk', '--tools', 'Bash',
-            '--allowedTools', 'Bash(python -m pytest test_calc.py *)', 'Bash(python repair.py)', '--', prompt]
+            '--allowedTools', 'Bash(pytest test_calc.py *)' if bare_pytest else 'Bash(python -m pytest test_calc.py *)', 'Bash(python repair.py)', '--', prompt]
     try:
         proc = subprocess.run(args, cwd=repo, env=env, capture_output=True, text=True, encoding='utf-8', errors='replace', timeout=150)
     except subprocess.TimeoutExpired:
         return {'scenario': name, 'passed': False, 'error': 'Claude host exceeded the 150-second test timeout'}
-    evidence = parse_host_events(proc.stdout)
+    evidence = parse_host_events(proc.stdout, pytest_command)
     # Only sanitized evidence is persisted; raw model/host output is not a report artifact.
     rows = []
     for path in state.glob('*.sqlite3'):
@@ -126,6 +127,7 @@ def scenario(claude: str, backend, output: Path, name: str) -> dict:
         if name == 'stuck' else
         state_name == 'failed' and executions == 5 and len(tests) == 5 and bool(rules) and not evidence['host_supra_denial'])
     return dict(evidence, scenario=name, passed=bool(expected and proc.returncode == 0 and evidence['host_result_seen'] and not evidence['host_result_error']),
+                bare_pytest=bare_pytest,
                 exit_code=proc.returncode, run_id=rows[0][0], state=state_name,
                 actual_pytest_executions=executions, test_reports=len(tests), rules=rules)
 
@@ -134,6 +136,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--claude', default=shutil.which('claude') or str(Path.home() / '.local/bin/claude.exe'))
     parser.add_argument('--scenario', choices=['healthy', 'stuck', 'observe', 'all'], default='all')
+    parser.add_argument('--bare-pytest', action='store_true', help='verify host-applied JUnit injection for direct pytest')
     args = parser.parse_args()
     auth = subprocess.run([args.claude, 'auth', 'status'], capture_output=True, text=True, timeout=15)
     if not json.loads(auth.stdout).get('loggedIn'):
@@ -144,7 +147,7 @@ def main():
     with local_service(output) as (backend, sup, workspace, alerts):
         results = []
         for name in selected:
-            result = scenario(args.claude, backend, output, name)
+            result = scenario(args.claude, backend, output, name, bare_pytest=args.bare_pytest)
             results.append(result)
             print(json.dumps(result), flush=True)
             (output / 'report.json').write_text(json.dumps({'kind': 'Authenticated native Claude Code host test',

@@ -1,6 +1,6 @@
 {
   "name": "agent-supra",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Observe Claude Code tool activity, track pytest progress, and deny the next tool call when Supra pauses a run.",
   "author": {"name": "Sanchit Pandey"},
   "homepage": "https://agentsupra.in/docs/quickstart",

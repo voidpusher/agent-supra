@@ -19,13 +19,16 @@ use `.\.venv\Scripts\python.exe` and `.\.venv\Scripts\agent-supra.exe` directly;
 changing machine security settings is not needed.
 
 ```sh
-python -m pip install --upgrade "agent-supra>=1.1.0"
+python -m pip install --upgrade "agent-supra>=1.1.1"
 python -c "import agent_supra; print(agent_supra.__version__)"
 ```
 
 Record your OS, Python version, and package version. Keep account/key setup time
 separate from installation-to-first-agent-run time. Under five minutes is our
 setup target, not a measured promise. Note every point where you needed help.
+Use the [timed setup worksheet](setup-timing.md); start the full stopwatch before
+account signup, and separately mark install, plugin setup and first verified test
+progress. A founder-assisted run must be labeled assisted.
 
 ## 2. Confirm your connection
 

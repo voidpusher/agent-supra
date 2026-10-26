@@ -32,15 +32,30 @@ EVENTS = {'SessionStart', 'SessionEnd', 'PreToolUse', 'PostToolUse', 'PostToolUs
 TOOLS = {'Edit', 'Write', 'Bash'}
 MAX_INPUT = 2_000_000
 MAX_PENDING = 500
+TEST_GUIDANCE = (
+    'Agent Supra tracks test progress from fresh pytest JUnit reports, not terminal text. '
+    'For Python tests use a direct command: python -m pytest --junitxml=.local/supra-tests.xml '
+    '(preserve the project test selection and flags). Keep .local/ ignored by Git. '
+    'Direct pytest commands without a report flag receive a per-tool JUnit argument automatically. '
+    'Do not chain test commands with cd, &&, pipes or shell substitutions; run them separately. '
+    'Jest and Go test progress is not supported. Never claim test supervision from tool activity alone. '
+    'Do not change tests or the project test framework just to satisfy monitoring. '
+    'These hooks do not measure model spend.'
+)
 
 
-def junit_path(command: str, cwd: str) -> Path | None:
-    """Recognize direct pytest commands with an explicit JUnit report argument."""
+def pytest_args(command: str) -> list[str] | None:
+    """Recognize a single direct command; never parse a shell program for rewriting."""
+    if any(char in command for char in '\r\n`$#'):
+        return None
     try:
-        args = shlex.split(command)
+        lexer = shlex.shlex(command, posix=True, punctuation_chars=';&|<>()')
+        lexer.whitespace_split = True
+        lexer.commenters = ''
+        args = list(lexer)
     except ValueError:
         return None
-    if not args or any(t in args for t in (';', '&&', '||', '|')):
+    if not args or any(t and all(c in ';&|<>()' for c in t) for t in args):
         return None
     executable = args[0].replace('\\', '/').rsplit('/', 1)[-1].lower().removesuffix('.exe')
     direct = executable in {'pytest', 'py.test'}
@@ -48,8 +63,18 @@ def junit_path(command: str, cwd: str) -> Path | None:
               and len(args) > 2 and args[1:3] == ['-m', 'pytest'])
     if not (direct or module):
         return None
+    return args
+
+
+def junit_path(command: str, cwd: str) -> Path | None:
+    """Recognize direct pytest commands with an explicit JUnit report argument."""
+    args = pytest_args(command)
+    if args is None:
+        return None
     report = None
     for index, arg in enumerate(args):
+        if arg == '--':
+            break
         if arg in {'--junitxml', '--junit-xml'} and index + 1 < len(args):
             report = args[index + 1]
         elif arg.startswith(('--junitxml=', '--junit-xml=')):
@@ -60,6 +85,23 @@ def junit_path(command: str, cwd: str) -> Path | None:
         if path.is_relative_to(root):
             return path
     return None
+
+
+def prepare_pytest(command: str, cwd: str, identity: str) -> tuple[Path | None, str | None]:
+    """Add only a JUnit argument; keep all original shell text and test options intact."""
+    args = pytest_args(command)
+    if args is None:
+        return None, None
+    if any(arg.startswith(('--junitxml', '--junit-xml')) for arg in args):
+        return junit_path(command, cwd), None  # Never replace an invalid/user-owned destination.
+    if any(arg in {'--', '--help', '-h', '--version', '-V', '--collect-only', '--co'} for arg in args):
+        return None, None
+    name = hashlib.sha256(identity.encode()).hexdigest()[:24]
+    relative = f'.local/supra-tests-{name}.xml'
+    report = (Path(cwd).resolve() / relative).resolve()
+    if not report.is_relative_to(Path(cwd).resolve()):
+        return None, None  # Includes a .local symlink pointing outside the project.
+    return report, command.rstrip() + ' --junitxml=' + relative
 
 
 def report_marker(path: Path | None) -> str:
@@ -288,8 +330,8 @@ class HookBridge:
             name = stream['name']
             data = payload.get('tool_input') or {}
             command = data.get('command', '') if isinstance(data, dict) else ''
-            report = junit_path(str(command), str(payload.get('cwd') or '.')) if payload.get('tool_name') == 'Bash' else None
             call_id = hashlib.sha256((stream['run'] + str(payload.get('tool_use_id') or '')).encode()).hexdigest()
+            report, updated_command = prepare_pytest(str(command), str(payload.get('cwd') or '.'), call_id) if payload.get('tool_name') == 'Bash' and payload.get('tool_use_id') else (None, None)
             salt = conn.execute('SELECT value FROM meta WHERE key="salt"').fetchone()[0].encode()
             if event == 'PreToolUse' and report and payload.get('tool_use_id'):
                 conn.execute('INSERT OR IGNORE INTO preflight VALUES (?,?)', (call_id, report_marker(report)))
@@ -334,8 +376,13 @@ class HookBridge:
                     if not decision['allowed']:
                         return denial(decision['state'])
                     conn.execute('UPDATE streams SET closed=0 WHERE name=?', (current['name'],))
-            if event == 'SessionStart':
-                return {'systemMessage': f'Agent Supra: {self.mode} mode. Tool/test supervision is attached; model spend is not measured by these hooks.'}
+                if updated_command:
+                    return {'hookSpecificOutput': {'hookEventName': 'PreToolUse',
+                        'updatedInput': {**data, 'command': updated_command},
+                        'additionalContext': 'Agent Supra added a local JUnit report argument for test-progress monitoring. Normal tool permissions still apply.'}}
+            if event in {'SessionStart', 'SubagentStart'}:
+                return {'systemMessage': f'Agent Supra: {self.mode} mode. Tool supervision is attached; test progress requires fresh pytest reports. Model spend is not measured.',
+                        'hookSpecificOutput': {'hookEventName': event, 'additionalContext': TEST_GUIDANCE}}
             return {}
         except SupervisorAPIError:
             if event == 'PreToolUse':

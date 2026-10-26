@@ -48,7 +48,7 @@ failure and timing reports.
 
 For Claude Code, try the [experimental hook integration](docs/claude-code.md).
 It tracks tool/test activity and can deny the next tool call when paused.
-It requires Agent Supra 1.1.0 or newer; model spend is not measured by hooks.
+It requires Agent Supra 1.1.1 or newer; model spend is not measured by hooks.
 
 For any existing command, try [CLI watch](docs/cli-watch.md):
 `agent-supra watch --junit ".local/results.xml" -- python my_agent.py`.

@@ -6,12 +6,12 @@ This is a preview integration, not a security sandbox or a model-request proxy.
 
 ## Install and connect
 
-The hook command requires Agent Supra 1.1.0 or newer.
+The hook command requires Agent Supra 1.1.1 or newer.
 Use Python 3.10+ and a terminal where its
 `agent-supra` command is on PATH. Activate your virtual environment first.
 
 ```sh
-pip install --upgrade "agent-supra>=1.1.0"
+pip install --upgrade "agent-supra>=1.1.1"
 agent-supra claude-hook --help
 claude plugin marketplace add voidpusher/agent-supra
 claude plugin install agent-supra@agent-supra
@@ -26,7 +26,6 @@ macOS/Linux:
 ```sh
 read -rs -p "Agent Supra API key: " AGENT_SUPRA_API_KEY
 export AGENT_SUPRA_API_KEY
-export AGENT_SUPRA_URL="https://agentsupra.in"
 export AGENT_SUPRA_CLAUDE_MODE="observe"
 claude
 ```
@@ -35,7 +34,6 @@ Windows PowerShell:
 
 ```powershell
 $env:AGENT_SUPRA_API_KEY = [System.Net.NetworkCredential]::new('', (Read-Host 'Agent Supra API key' -AsSecureString)).Password
-$env:AGENT_SUPRA_URL = 'https://agentsupra.in'
 $env:AGENT_SUPRA_CLAUDE_MODE = 'observe'
 claude
 ```
@@ -44,13 +42,18 @@ For a source checkout, install with `pip install -e .` and launch
 `claude --plugin-dir /absolute/path/to/agent-supra/plugins/claude-code` instead
 of installing the marketplace plugin. Use one loading method, not both.
 
-SessionStart displays an attachment notice. A task named **Claude Code session**
+The production URL defaults to `https://agentsupra.in`; set `AGENT_SUPRA_URL`
+only for a different server. Observation is also the default; the explicit mode
+above avoids inheriting an old pause-mode setting. No key is saved by this setup.
+
+SessionStart displays an attachment notice and injects test instructions into
+Claude's context, including the report command and unsupported frameworks. A task named **Claude Code session**
 appears after successful attachment. Its run starts in observation mode.
 Changing observation/pause mode uses a separate local session mapping.
 
 ## Give Supra actual test results
 
-Have Claude run a direct pytest command with an explicit JUnit argument:
+The session-start hook tells Claude to use a direct pytest command with an explicit JUnit argument:
 
 ```sh
 python -m pytest --junitxml=.local/supra-tests.xml
@@ -58,9 +61,19 @@ python -m pytest --junitxml=.local/supra-tests.xml
 
 Ensure `.local/` is ignored by Git in the project being tested. The report itself
 can contain private test output; it stays local. Use the same report argument
-on subsequent attempts. No test is launched, command rewritten, or file modified
-by the hook. Bare `pytest`, chained shell commands, Jest and Go are not test-progress
-inputs in this first version. Their supported tool failures can still be observed.
+on subsequent attempts. Direct `pytest`, `py.test`, and `python -m pytest`
+commands without a JUnit option now receive a local report argument automatically
+through PreToolUse `updatedInput`. Existing flags, test selection and tool input
+fields are preserved; Claude's normal permission checks still apply. The report
+filename is unique per tool call under `.local/`, preventing parallel calls from
+overwriting one another. The test runner creates it; the hook does not launch tests.
+
+Explicit JUnit destinations are respected, including refusing an invalid or
+out-of-project destination rather than silently replacing it. Help/version,
+collection-only commands, commands containing `--`, shell chains, substitutions,
+redirections, Jest and Go are not automatically instrumented. Run a simple direct
+command with a valid explicit report flag instead. Unsupported commands can
+provide tool activity/failure evidence, but not verified test-progress evidence.
 
 PreToolUse records the report's existing file marker. PostToolUse or
 PostToolUseFailure reads it only if that marker changed. Missing, stale, malformed,
@@ -177,6 +190,27 @@ python -m scripts.claude_hook_smoke
 ```
 
 Its sanitized report is written under ignored `.local/claude-code-smoke/`.
+
+### Bare-pytest patch verification — 26 October 2026
+
+Agent Supra 1.1.1 / plugin 0.1.1 also passed real bare-pytest executions through
+the hook CLI and authenticated native Claude Code host: a repair completed after
+two executions, enforcement paused after four and denied the fifth requested
+tool, and observation allowed five executions while recording a flag. No report
+flag was included in the requested commands; the host applied the hook's
+`updatedInput`. Tests use synthetic repositories and isolated local supervision,
+not production keys or outside users. Session guidance uses `additionalContext`,
+as described in the [official hook reference](https://code.claude.com/docs/en/hooks).
+
+Repeat these checks with `python -m scripts.claude_hook_smoke --bare-pytest`
+or `python -m scripts.claude_host_test --bare-pytest`. The latter consumes Claude
+quota and retains the existing per-scenario budget and turn limits.
+
+The patch's Windows regression suite passed **331 tests**. Linux/database CI is
+reported separately; the native-host checks above are Windows checks.
+
+The [timed onboarding worksheet](setup-timing.md) must be filled by a real tester;
+internal checks do not establish a setup-under-five-minutes result.
 
 Contracts: [Claude Code hooks](https://code.claude.com/docs/en/hooks) and
 [plugin reference](https://code.claude.com/docs/en/plugins-reference).
