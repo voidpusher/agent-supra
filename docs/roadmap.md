@@ -44,8 +44,10 @@ Records remain workspace-linked; they are not claimed to be anonymous.
 
 [Live agent verification](live-agent-verification.md) now covers the production
 invoice-agent runs, dashboard Continue/Stop, limits and client-outage recovery.
-Alert transport acceptance passed; independent inbox/channel receipt remains
-unverified. Production credentials are excluded from CI and public reports.
+Alert transport acceptance passed, and Resend delivery records confirm mail-server
+acceptance for the stuck, budget and call-cap alerts. Inbox placement and Slack
+message visibility remain unverified. Production credentials are excluded from
+CI and public reports.
 
 Our [invoice-reconciliation agent](reconciliation-agent.md) now exercises real
 Gemini decisions, calculator/ledger tools, immutable business checks and HTTP

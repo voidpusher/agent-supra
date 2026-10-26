@@ -19,6 +19,7 @@ The automated harness is `scripts/live_reconciliation_test.py`.
 | Lost acknowledgement | Retried accepted events were not duplicated |
 | Client outage, fail closed | Prevented the tool from executing |
 | Slack/email test | Dashboard returned `alert-sent` with both destinations configured |
+| Email delivery records | Resend shows Delivered for the stuck-agent, synthetic-budget, and synthetic-call-cap alerts; each body links to its matching test run |
 | Temporary credential cleanup | Replacement test key revoked; subsequent authentication returned HTTP 401 |
 
 Gemini returned HTTP 429 during the first observation attempt. The failed
@@ -28,9 +29,11 @@ Client-side fault injection never shut down production. No workspace defaults
 were changed.
 
 The synchronous alert test confirms that the configured transports accepted
-delivery without errors. Actual Slack-channel and recipient-inbox receipt were
-not independently verified: the connected Gmail account differs from the alert
-recipient, and Resend was signed out. This remains an explicit verification gap.
+delivery without errors. After sign-in, Resend's delivery records were checked
+for the stuck-agent, synthetic-budget, and synthetic-call-cap alerts. All three
+show Delivered, and their message bodies link to the exact test run IDs. This
+confirms acceptance by the recipient's mail server. Inbox versus spam placement,
+message opening, and Slack-channel message visibility remain unverified.
 
 Temporary test keys were revoked. The dedicated ignored credential file was
 removed after authentication rejection was verified. No credential was committed
