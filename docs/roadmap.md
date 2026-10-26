@@ -42,6 +42,13 @@ Records remain workspace-linked; they are not claimed to be anonymous.
 
 ### Beta execution checklist
 
+Our [invoice-reconciliation agent](reconciliation-agent.md) now exercises real
+Gemini decisions, calculator/ledger tools, immutable business checks and HTTP
+supervision. Healthy completion, loop pause with a blocked next provider call,
+and eight unblocked observation calls have passing evidence. Observation was
+retested separately after one provider API error; failed evidence is retained.
+This is another internal validation path and does not satisfy outside-user gates.
+
 The [participant setup guide](setup-trial.md) is ready. The rendered quickstart
 was exercised with the published 1.1.0 SDK against an isolated HTTP service:
 completed run and test event confirmed, invalid-key/offline checks fail clearly,

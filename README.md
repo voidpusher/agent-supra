@@ -37,6 +37,11 @@ Sign up, create an API key, then follow the quickstart at `/docs/quickstart`.
 
 ## Connect an agent
 
+To exercise our own business agent first, see the
+[invoice-reconciliation agent](docs/reconciliation-agent.md). It uses Gemini,
+calculator and ledger-edit tools, with healthy, stuck, and observation scenarios
+against an isolated Supra HTTP service.
+
 For Claude Code, try the [experimental hook integration](docs/claude-code.md).
 It tracks tool/test activity and can deny the next tool call when paused.
 It requires Agent Supra 1.1.0 or newer; model spend is not measured by hooks.
