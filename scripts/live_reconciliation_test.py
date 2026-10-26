@@ -165,6 +165,7 @@ def main(argv=None):
     parser.add_argument('--run-live', action='store_true', required=True)
     parser.add_argument('--dashboard-controls', action='store_true')
     parser.add_argument('--model', default='gemini-3.5-flash-lite')
+    parser.add_argument('--provider-timeout', type=int, choices=[30,60], default=60)
     parser.add_argument('--scenario', choices=['all', 'healthy', 'stuck', 'observe'], default='all')
     parser.add_argument('--skip-agent', action='store_true', help='only control, limit and recovery checks; no Gemini calls')
     parser.add_argument('--agent-only', action='store_true', help='run only selected agent scenarios; no limit/control fixture alerts')
@@ -185,6 +186,7 @@ def main(argv=None):
               'results': [], 'errors': [], 'passed': False, 'synthetic_invoices_only': True,
               'agent_scenarios_required': scenarios,
               'limit_recovery_control_checks_required': not args.agent_only,
+              'provider_timeout_seconds': args.provider_timeout,
               'alert_receipt': 'not independently verified'}
     def checkpoint(control=None):
         if control:
@@ -200,8 +202,8 @@ def main(argv=None):
             gemini_key = os.environ.get('GEMINI_API_KEY') or dotenv_values('.env').get('GEMINI_API_KEY')
             if not gemini_key:
                 raise ValueError('GEMINI_API_KEY is missing')
-            with genai.Client(api_key=gemini_key, http_options={'timeout': 30_000, 'retry_options': {'attempts': 1}}) as provider:
-                paced = PacedProvider(provider)
+            with genai.Client(api_key=gemini_key, http_options={'timeout': args.provider_timeout*1000, 'retry_options': {'attempts': 1}}) as provider:
+                paced = PacedProvider(provider, interval=7)
                 for scenario in scenarios:
                     result = reconcile(backend, folder / scenario, paced, scenario=scenario, model=args.model,
                         policy={'threshold': 4, 'rules': DEFAULT_POLICY['rules']})

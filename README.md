@@ -42,6 +42,10 @@ To exercise our own business agent first, see the
 calculator and ledger-edit tools, with healthy, stuck, and observation scenarios
 against an isolated Supra HTTP service.
 
+The [reliability benchmark](docs/reconciliation-reliability.md) expands this to
+24 known-outcome controls and six optional real-Gemini tasks, with separate
+failure and timing reports.
+
 For Claude Code, try the [experimental hook integration](docs/claude-code.md).
 It tracks tool/test activity and can deny the next tool call when paused.
 It requires Agent Supra 1.1.0 or newer; model spend is not measured by hooks.

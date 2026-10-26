@@ -56,6 +56,15 @@ and eight unblocked observation calls have passing evidence. Observation was
 retested separately after one provider API error; failed evidence is retained.
 This is another internal validation path and does not satisfy outside-user gates.
 
+The [broader reliability matrix](reconciliation-reliability.md) now passes 24
+known-outcome HTTP controls covering rounding, duplicates, missing amounts,
+partial progress, conflict/observation, malformed actions and provider failures.
+All six real Gemini scenarios have passing evidence across explicit assessments;
+five initial HTTP 504 failures and one interrupted repeat remain recorded.
+The request deadline is now 60 seconds with retries disabled. The Windows
+regression suite passes 308 tests. These internal results do not replace the
+outside-user setup trial or establish production latency/accuracy guarantees.
+
 The [participant setup guide](setup-trial.md) is ready. The rendered quickstart
 was exercised with the published 1.1.0 SDK against an isolated HTTP service:
 completed run and test event confirmed, invalid-key/offline checks fail clearly,

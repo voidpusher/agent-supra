@@ -61,6 +61,9 @@ Provider dispatches are spaced at least five seconds apart. Explicit SDK retries
 are disabled for this assessment; provider errors are reported as failures.
 Pacing does not guarantee that project quotas are sufficient. Invoice scenarios
 retain their per-task estimated spend thresholds and local step ceilings.
+The current harness spaces dispatches seven seconds apart and defaults to a
+60-second provider request deadline; `--provider-timeout 30` retains the earlier
+deadline used for the live results above.
 
 For independent phases:
 

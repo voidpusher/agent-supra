@@ -53,22 +53,28 @@ def main(argv=None):
     parser.add_argument('--gemini', action='store_true')
     parser.add_argument('--model', default='gemini-3.5-flash-lite')
     parser.add_argument('--scenario', choices=['all', 'healthy', 'stuck', 'observe'], default='all')
+    parser.add_argument('--provider-timeout', type=int, choices=[30,60], default=60)
     args = parser.parse_args(argv)
     folder = Path('.local/reconciliation-test') / (datetime.now().strftime('%Y%m%d-%H%M%S') + '-' + uuid4().hex[:6])
     folder.mkdir(parents=True)
     provider = None
+    paced = None
     if args.gemini:
         from dotenv import dotenv_values
         from google import genai
         key = os.environ.get('GEMINI_API_KEY') or dotenv_values('.env').get('GEMINI_API_KEY')
         if not key:
             raise SystemExit('GEMINI_API_KEY is missing; keep it in the ignored .env or environment.')
-        provider = genai.Client(api_key=key, http_options={'timeout': 30_000})
+        provider = genai.Client(api_key=key, http_options={
+            'timeout': args.provider_timeout*1000, 'retry_options': {'attempts': 1}})
+        from scripts.live_reconciliation_test import PacedProvider
+        paced = PacedProvider(provider, interval=7)
     scenarios = ('healthy', 'stuck', 'observe') if args.scenario == 'all' else (args.scenario,)
     report = {'kind': 'Internal business-agent test; no outside users', 'scenarios': list(scenarios),
               'provider': 'real Gemini' if args.gemini else 'scripted control (synthetic usage)',
               'model': args.model if args.gemini else 'self-test-scripted',
               'synthetic_invoices_only': True, 'results': [], 'errors': []}
+    report['provider_timeout_seconds'] = args.provider_timeout
     report.update(passed=False, temporary_local_key_revoked=False)
     def checkpoint():
         (folder / 'report.json').write_text(json.dumps(report, indent=2) + '\n', encoding='utf-8')
@@ -77,7 +83,7 @@ def main(argv=None):
         with local_service(folder.resolve()) as (backend, supervisor, workspace, alerts):
             for scenario in scenarios:
                 try:
-                    result = reconcile(backend, folder / scenario, provider or FixturePlanner(scenario),
+                    result = reconcile(backend, folder / scenario, paced or FixturePlanner(scenario),
                                        scenario=scenario, model=report['model'])
                     result['passed'] = expected(result)
                     timeline = json.dumps(backend.timeline(result['run_id']))

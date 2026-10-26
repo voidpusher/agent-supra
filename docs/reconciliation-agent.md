@@ -8,12 +8,17 @@ requests deterministic calculator results, chooses corrections, writes the
 ledger, and validates it. It is separate from the earlier coding-agent fixtures.
 It never makes payments or touches real invoices.
 
-The model chooses between `calculate_total` and `set_amount`. Python computes
+The model chooses between `calculate_total`, `set_amount`, and `remove_duplicate`. Python computes
 money in integer cents; model text is parsed as bounded JSON, never executed.
 Only the three fixture invoice IDs can be edited. The invoice facts and
 validation requirements remain immutable. Reading a calculator does not count
 as another failed repair attempt; validation is reported after actual edit
 attempts or rejected proposals.
+
+The [broader reliability matrix](reconciliation-reliability.md) adds rounding,
+declared duplicate records, missing amounts, partial progress, malformed output,
+and provider-error controls. Its planner controls and real-Gemini results are
+reported separately.
 
 ## Run the isolated assessment
 
