@@ -4,14 +4,14 @@
 <div class="page-head">
   <div>
     <h1>Runs</h1>
-    <p class="sub">Every supervised agent run in {{ session.workspace_name }}, newest first.</p>
+    <p class="sub">Agent activity and intervention history in {{ session.workspace_name }}.</p>
   </div>
 </div>
 
 {% if paused_count %}
 <div class="attention" role="status">
   <span><strong>{{ paused_count }} run{{ "s" if paused_count != 1 }} waiting for you.</strong>
-    The supervisor paused {{ "them" if paused_count != 1 else "it" }} and is holding further model calls.</span>
+    Further supervised actions wait for your review.</span>
   <a class="btn amber" href="/app?state=paused">Review paused runs</a>
 </div>
 {% endif %}
@@ -30,6 +30,7 @@
 </nav>
 
 <section class="panel list">
+  <div class="section-heading"><h2>Run history</h2><span class="muted small">Newest first</span></div>
   {% if runs %}
   <div class="table-wrap">
   <table class="runs">

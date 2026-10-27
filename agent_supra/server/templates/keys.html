@@ -6,7 +6,8 @@
 
 {% if new_key %}
 <section class="panel warn">
-  <h2>Copy your new key now</h2>
+  <div class="section-heading"><h2>Copy your new key now</h2><button class="btn quiet sm" type="button" data-copy-key>Copy key</button></div>
+  <p id="copy-key-status" class="small muted" role="status" aria-live="polite"></p>
   <p class="muted">This is the only time it's shown. Store it as an environment variable, not in your code.</p>
   <p class="secret" id="new-key">{{ new_key }}</p>
   <pre class="snippet">export AGENT_SUPRA_API_KEY="{{ new_key }}"

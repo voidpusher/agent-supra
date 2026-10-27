@@ -6,28 +6,22 @@
 <title>{% block title %}{{ app_name }}{% endblock %}</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<!-- Apple devices use SF Pro (system font). Inter is the closest match elsewhere. -->
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<meta name="theme-color" content="#f5f5f7" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#0b0b0d" media="(prefers-color-scheme: dark)">
-<link rel="stylesheet" href="/static/app.css?v=7">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<meta name="theme-color" content="#101011">
+<link rel="stylesheet" href="/static/app.css?v=8">
+<link rel="stylesheet" href="/static/landing.css?v=4">
 <link rel="icon" type="image/svg+xml" href="/static/agent-supra-mark.svg?v=2">
 {% block head %}{% endblock %}
 </head>
-<body class="{% block body_class %}{% endblock %}">
+<body class="{% block body_class %}workspace{% endblock %}">
 {% block body %}
+<a class="skip-link" href="#main-content">Skip to content</a>
 <header class="topbar">
   <div class="wrap">
-    <a class="brand" href="/app"><span class="brand-mark" aria-hidden="true"></span>{{ app_name }}</a>
-    <nav class="nav" aria-label="Main">
-      <a href="/app" {% if nav == "runs" %}aria-current="page"{% endif %}>Runs</a>
-      {% if operator %}<a href="/app/beta" {% if nav == "beta" %}aria-current="page"{% endif %}>Beta</a><a href="/app/errors" {% if nav == "errors" %}aria-current="page"{% endif %}>Server errors</a>{% endif %}
-      <a href="/app/keys" {% if nav == "keys" %}aria-current="page"{% endif %}>API keys</a>
-      <a href="/app/settings" {% if nav == "settings" %}aria-current="page"{% endif %}>Settings</a>
-      <a href="/docs/quickstart" {% if nav == "docs" %}aria-current="page"{% endif %}>Quickstart</a>
-    </nav>
+    <a class="brand" href="/"><span class="brand-mark" aria-hidden="true"></span>{{ app_name }}</a>
+    <span class="topbar-context">AGENT SUPERVISION <span>/ WORKSPACE</span></span>
     <div class="who">
-      <span>{{ session.workspace_name }}</span>
+      <span class="workspace-name">{{ session.workspace_name }}</span>
       <form method="post" action="/logout">
         <input type="hidden" name="csrf" value="{{ session.csrf }}">
         <button class="btn quiet" type="submit">Log out</button>
@@ -35,12 +29,26 @@
     </div>
   </div>
 </header>
-<main class="app">
+<div class="workspace-shell">
+  <aside class="app-sidebar" aria-label="Workspace navigation">
+    <p class="nav-label">WORKSPACE</p>
+    <nav class="nav" aria-label="Main">
+      <a href="/app" {% if nav == "runs" %}aria-current="page"{% endif %}>Runs</a>
+      {% if operator %}<a href="/app/beta" {% if nav == "beta" %}aria-current="page"{% endif %}>Beta</a><a href="/app/errors" {% if nav == "errors" %}aria-current="page"{% endif %}>Server errors</a>{% endif %}
+      <a href="/app/keys" {% if nav == "keys" %}aria-current="page"{% endif %}>API keys</a>
+      <a href="/app/settings" {% if nav == "settings" %}aria-current="page"{% endif %}>Settings</a>
+      <a href="/docs/quickstart" {% if nav == "docs" %}aria-current="page"{% endif %}>Quickstart</a>
+    </nav>
+    <div class="sidebar-note"><span class="nav-label">GET CONNECTED</span><p>Bring your agent.<br>See the evidence.</p><a href="/docs/quickstart">Connection guide <span aria-hidden="true">↗</span></a></div>
+  </aside>
+<main class="app" id="main-content">
   <div class="wrap">
+    <p class="page-kicker">WORKSPACE <span aria-hidden="true">/</span> {{ {'runs':'ACTIVITY', 'keys':'DEVELOPER ACCESS', 'settings':'CONFIGURATION', 'beta':'BETA OPERATIONS', 'errors':'SYSTEM MONITORING'}.get(nav, 'RUN EVIDENCE') }}</p>
     {% if notice %}<div class="notice {{ notice.kind }}" role="status">{{ notice.text }}</div>{% endif %}
     {% block content %}{% endblock %}
   </div>
 </main>
+</div>
 {% endblock %}
 <footer class="site-footer">
   <div class="wrap">
@@ -53,5 +61,6 @@
     </nav>
   </div>
 </footer>
+<script src="/static/app.js?v=1" defer></script>
 </body>
 </html>

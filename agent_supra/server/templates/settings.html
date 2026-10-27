@@ -4,10 +4,12 @@
 <div class="page-head"><div><h1>Settings</h1>
 <p class="sub">Defaults for every task in {{ ws.name }}. A task can override them when it's created.</p></div></div>
 
+<nav class="section-jump" aria-label="Settings sections"><a href="#detection">Detection</a><a href="#alerts">Alerts</a><a href="#model-prices">Model prices</a><a href="#workspace-details">Workspace</a><a href="#account-security">Account</a></nav>
+
 <form method="post" action="/app/settings">
 <input type="hidden" name="csrf" value="{{ session.csrf }}">
 
-<section class="panel">
+<section class="panel" id="detection">
   <h2>Loop detection</h2>
   <div class="field">
     <label class="check"><input type="checkbox" name="observation_mode" value="1" {% if policy.observation_mode %}checked{% endif %}>
@@ -35,7 +37,7 @@
   </table></div>
 </section>
 
-<section class="panel">
+<section class="panel" id="alerts">
   <h2>Alerts</h2>
   <div class="grid2">
     <div class="field"><label for="slack">Slack webhook URL</label>
@@ -49,20 +51,20 @@
     <span>Also alert on flags, not just pauses</span></label>
 </section>
 
-<section class="panel">
+<section class="panel" id="model-prices">
   <h2>Model prices</h2>
   <p class="muted small">Used to estimate spend. Built in: current Gemini prices. Add any other model as <code>model-name input output</code>, in USD per million tokens, one per line.</p>
   <textarea name="prices" aria-label="Model prices" placeholder="my-model 1.25 10">{{ prices_text }}</textarea>
 </section>
 
-<section class="panel">
+<section class="panel" id="workspace-details">
   <div class="field narrow"><label for="ws-name">Workspace name</label>
     <input id="ws-name" name="name" type="text" maxlength="200" value="{{ ws.name }}" required></div>
   <div class="actions"><button class="btn" type="submit">Save settings</button></div>
 </section>
 </form>
 
-<section class="panel">
+<section class="panel" id="alert-test">
   <h2>Test your alerts</h2>
   <p class="muted small">Sends a sample "run paused" alert to the Slack webhook and email saved above.</p>
   <form method="post" action="/app/settings/test-alert">
@@ -71,7 +73,7 @@
   </form>
 </section>
 
-<section class="panel">
+<section class="panel" id="account-security">
   <h2>Change password</h2>
   <form method="post" action="/app/settings/password" class="grid2 align-end">
     <input type="hidden" name="csrf" value="{{ session.csrf }}">

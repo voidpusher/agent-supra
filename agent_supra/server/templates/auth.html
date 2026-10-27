@@ -1,9 +1,11 @@
 {% extends "base.html" %}
 {% block title %}{{ heading }} | {{ app_name }}{% endblock %}
+{% block body_class %}auth-screen{% endblock %}
 {% block body %}
 <div class="auth">
   <p class="brand-row"><a class="brand" href="/"><span class="brand-mark" aria-hidden="true"></span>{{ app_name }}</a></p>
   <div class="panel">
+    <p class="auth-kicker">AGENT SUPRA / WORKSPACE ACCESS</p>
     <h1>{{ heading }}</h1>
     {% if error %}<div class="notice error" role="alert">{{ error }}</div>{% endif %}
     <form method="post" action="{{ action }}">
